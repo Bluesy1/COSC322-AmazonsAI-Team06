@@ -9,11 +9,6 @@
     <remote-repository>
       <option name="id" value="ubc-yong-gao" />
       <option name="name" value="ubc-yong-gao" />
-      <option name="url" value="https://people.ok.ubc.ca/yongg/computing_resources/" />
-    </remote-repository>
-    <remote-repository>
-      <option name="id" value="ubc-yong-gao" />
-      <option name="name" value="ubc-yong-gao" />
       <option name="url" value="https://cmps-people.ok.ubc.ca/yongg/computing_resources/" />
     </remote-repository>
     <remote-repository>
