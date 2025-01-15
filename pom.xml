@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
  
     <groupId>ubc.cosc322</groupId>
-    <artifactId>team-00</artifactId>
+    <artifactId>team-06</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
      
 
-    <name>COSC322-Team-00</name>
+    <name>COSC322-Team-06</name>
     <description>COSC 322 Game Player Project</description>
     <inceptionYear>2021</inceptionYear>
     
@@ -51,7 +51,7 @@
  
     </build>
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
     </properties>
 </project>
