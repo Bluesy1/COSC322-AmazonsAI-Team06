@@ -1,13 +1,16 @@
 
 package ubc.cosc322;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import sfs2x.client.entities.Room;
 import ygraph.ai.smartfox.games.BaseGameGUI;
 import ygraph.ai.smartfox.games.GameClient;
+import ygraph.ai.smartfox.games.GameMessage;
 import ygraph.ai.smartfox.games.GamePlayer;
+import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
 
 /**
  * An example illustrating how to implement a GamePlayer
@@ -55,21 +58,17 @@ public class COSC322Test extends GamePlayer{
     	
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
-    	//this.gamegui = new BaseGameGUI(this);
+    	this.gamegui = new BaseGameGUI(this);
     }
  
 
 
     @Override
     public void onLogin() {
-		List<Room> rooms = this.gameClient.getRoomList();
-		System.out.println("The available room(s) in the gameClient are:");
-		for (Room room: rooms) {
-			System.out.printf("- %s%n", room.getName());
+		userName = gameClient.getUserName();
+		if(gamegui != null) {
+			gamegui.setRoomInformation(gameClient.getRoomList());
 		}
-		Room room = rooms.get(0);
-		System.out.println("Joining Room: " + room.getName());
-		this.gameClient.joinRoom(room.getName());
     }
 
     @Override
@@ -79,7 +78,18 @@ public class COSC322Test extends GamePlayer{
 	
     	//For a detailed description of the message types and format, 
     	//see the method GamePlayer.handleGameMessage() in the game-client-api document. 
-		System.out.printf("%s:%s%n", messageType, msgDetails);
+
+		switch (messageType) {
+			case GameMessage.GAME_STATE_BOARD -> {
+				this.gamegui.setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
+			}
+			case GameMessage.GAME_ACTION_MOVE -> {
+				this.gamegui.updateGameState(msgDetails);
+			}
+			default -> {
+				System.out.printf("Unknown Message Type: %s%n%t%s%n", messageType, msgDetails);
+			}
+		}
     	return true;   	
     }
     
@@ -98,7 +108,7 @@ public class COSC322Test extends GamePlayer{
 	@Override
 	public BaseGameGUI getGameGUI() {
 		// TODO Auto-generated method stub
-		return  null;
+		return  this.gamegui;
 	}
 
 	@Override
