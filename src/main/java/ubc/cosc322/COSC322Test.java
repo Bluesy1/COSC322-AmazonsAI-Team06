@@ -1,9 +1,7 @@
 
 package ubc.cosc322;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import sfs2x.client.entities.Room;
 import ygraph.ai.smartfox.games.BaseGameGUI;
@@ -71,6 +69,7 @@ public class COSC322Test extends GamePlayer{
 		}
     }
 
+	@SuppressWarnings("unchecked")
     @Override
     public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
     	//This method will be called by the GameClient when it receives a game-related message
@@ -81,13 +80,25 @@ public class COSC322Test extends GamePlayer{
 
 		switch (messageType) {
 			case GameMessage.GAME_STATE_BOARD -> {
-				this.gamegui.setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
+				getGameGUI().setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
+			}
+			case GameMessage.GAME_ACTION_START -> {
+				getGameGUI().setGameState((ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE));
+				boolean makeMove = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
+				if (makeMove) {
+					System.out.println("TODO: Make Opening Move");
+				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
-				this.gamegui.updateGameState(msgDetails);
+				getGameGUI().updateGameState(
+						(ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR),
+						(ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT),
+						(ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.ARROW_POS)
+				);
+
 			}
 			default -> {
-				System.out.printf("Unknown Message Type: %s%n%t%s%n", messageType, msgDetails);
+				System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
 			}
 		}
     	return true;   	
