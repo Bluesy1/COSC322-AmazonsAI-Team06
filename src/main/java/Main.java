@@ -4,6 +4,7 @@ import ygraph.ai.smartfox.games.GameClient;
 import ygraph.ai.smartfox.games.GameMessage;
 import ygraph.ai.smartfox.games.GamePlayer;
 import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
+import ygraph.ai.smartfox.games.amazons.HumanPlayer;
 
 import java.util.*;
 
@@ -23,7 +24,12 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-    	Main player = new Main(args[0], args[1]);
+		GamePlayer player;
+		if (args.length == 0) {
+			player = new HumanPlayer();
+		} else {
+			player = new Main(args[0], args[1]);
+		}
 
     	if(player.getGameGUI() == null) {
     		player.Go();
