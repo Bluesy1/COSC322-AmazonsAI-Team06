@@ -26,11 +26,12 @@ public class Main extends GamePlayer{
      */
     public static void main(String[] args) {
 		GamePlayer player;
-		if (args.length == 0) {
-			player = new HumanPlayer();
-		} else {
-			player = new Main(args[0], args[1]);
-		}
+//		if (args.length == 0) {
+//			player = new HumanPlayer();
+//		} else {
+//		player = new Main(args[0], args[1]);
+//		}
+		player = new Main("", "");
 
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -115,6 +116,7 @@ public class Main extends GamePlayer{
 				System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
 			}
 		}
+		System.out.println(gameState.boardToString());
     	return true;   	
     }
     
