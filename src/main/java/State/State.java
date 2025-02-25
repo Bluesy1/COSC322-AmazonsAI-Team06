@@ -36,7 +36,7 @@ public class State implements Cloneable {
         this.blackQueens = state.blackQueens.clone();
         this.board = state.board.clone();
 
-        int movingPiece = getPiece(action.fromCol, action.fromRow);
+        int movingPiece = getPos(action.fromCol, action.fromRow);
         setPiece(action.toCol, action.toRow, movingPiece);
         clearPiece(action.fromCol, action.fromRow);
         setPiece(action.arrowCol, action.arrowRow, ARROW);
@@ -66,7 +66,12 @@ public class State implements Cloneable {
         }
     }
 
-    public int getPiece(int x, int y) {
+    public int getPos(Pair pos) {
+        //noinspection SuspiciousNameCombination
+        return getPos(pos.y, pos.x);
+    }
+
+    public int getPos(int x, int y) {
         return board[x][y];
     }
 
@@ -93,7 +98,7 @@ public class State implements Cloneable {
             sb.append(String.format("%2d ", row + 1));
             for (int col = BOARD_SIZE-1; col >= 0; col--) {
                 char piece;
-                switch (getPiece(col, row)) {
+                switch (getPos(col, row)) {
                     case WHITE -> piece = 'W';
                     case BLACK -> piece = 'B';
                     case ARROW -> piece = 'X';

@@ -25,6 +25,15 @@ public final class Pair {
         return new Pair(y, x);
     }
 
+    public Pair add(Pair p) {
+        return new Pair(x + p.x, y + p.y);
+    }
+
+    public boolean isInBounds() {
+        return x >= 0 && x < State.BOARD_SIZE
+                && y >= 0 && y < State.BOARD_SIZE;
+    }
+
     @Override
     public String toString() {
         return String.format("(%d,%d)", x, y);

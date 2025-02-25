@@ -31,6 +31,19 @@ public class Action {
         arrowCol = arrow.y;
     }
 
+    public Action(Pair origin, Pair destination, Pair arrow) {
+        this.origin = origin;
+        this.destination = destination;
+        this.arrow = arrow;
+
+        fromRow = origin.x;
+        fromCol = origin.y;
+        toRow = destination.x;
+        toCol = destination.y;
+        arrowRow = arrow.x;
+        arrowCol = arrow.y;
+    }
+
     /**
      * Represents the action in the conventional notation of [oldPos]-[newPos]/[arrowPos]
      *
