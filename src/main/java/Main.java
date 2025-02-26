@@ -25,13 +25,8 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		GamePlayer player;
-//		if (args.length == 0) {
-//			player = new HumanPlayer();
-//		} else {
-//		player = new Main(args[0], args[1]);
-//		}
-		player = new Main("", "");
+//		Main player = new Main("Team-06", "Team-06");
+		Main player = new Main("", "");
 
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -81,7 +76,8 @@ public class Main extends GamePlayer{
 				ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
 				getGameGUI().setGameState(board);
 				gameState = new State(board);
-				System.out.printf("Board initialized by %s:%n%s%n", messageType, gameState.boardToString());
+//				System.out.printf("Board initialized by %s:%n%s%n", messageType, gameState.boardToString());
+//				System.out.println(board);
 			}
 			case GameMessage.GAME_ACTION_START -> {
 //				System.out.println(msgDetails.keySet());
@@ -95,14 +91,17 @@ public class Main extends GamePlayer{
 					ArrayList<Action> moves = Generator.availableMoves(gameState, State.BLACK);
 					Action randomAction = moves.get(new Random().nextInt(moves.size()));
 					System.out.printf("'Chosen' random move: %s\n", randomAction);
-					getGameClient().sendMoveMessage(randomAction.toServerResponse());
+					Map<String, Object> response = randomAction.toServerResponse();
+					getGameClient().sendMoveMessage(response);
+					getGameGUI().updateGameState(response);
+					gameState = new State(gameState, randomAction);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
-				ArrayList<Integer> curPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
-				ArrayList<Integer> newPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
-				ArrayList<Integer> arrowPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.ARROW_POS);
-				getGameGUI().updateGameState(curPos, newPos, arrowPos);
+//				ArrayList<Integer> curPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
+//				ArrayList<Integer> newPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
+//				ArrayList<Integer> arrowPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.ARROW_POS);
+				getGameGUI().updateGameState(msgDetails);
 				Action action = new Action(msgDetails);
 				System.out.printf("Received opponent move: %s\n", action);
 				gameState = new State(gameState, action);
@@ -110,7 +109,10 @@ public class Main extends GamePlayer{
 				ArrayList<Action> moves = Generator.availableMoves(gameState, isBlack ? State.BLACK : State.WHITE);
 				Action randomAction = moves.get(new Random().nextInt(moves.size()));
 				System.out.printf("'Chosen' random move: %s\n", randomAction);
-				getGameClient().sendMoveMessage(randomAction.toServerResponse());
+				Map<String, Object> response = randomAction.toServerResponse();
+				getGameClient().sendMoveMessage(response);
+				getGameGUI().updateGameState(response);
+				gameState = new State(gameState, randomAction);
 			}
 			default -> {
 				System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);

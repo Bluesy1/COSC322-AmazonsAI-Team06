@@ -12,8 +12,8 @@ public final class Pair {
     }
 
     public Pair(ArrayList<Integer> intArr) {
-        this.x = intArr.get(0);
-        this.y = intArr.get(1);
+        this.x = intArr.get(1);
+        this.y = intArr.get(0);
     }
 
     public ArrayList<Integer> toIntArr() {
