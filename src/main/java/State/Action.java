@@ -8,8 +8,6 @@ public class Action {
     protected int fromRow, fromCol, toRow, toCol, arrowRow, arrowCol;
     protected Pair origin, destination, arrow;
     private final String[] cols = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
-    private final Pair neg = new Pair(-1, -1);
-    private final Pair pos = new Pair(1, 1);
     /**
      * Converts a map to an action.
      *
@@ -21,9 +19,9 @@ public class Action {
         ArrayList<Integer> fromPos = (ArrayList<Integer>) actionMap.get(AmazonsGameMessage.QUEEN_POS_CURR);
         ArrayList<Integer> toPos = (ArrayList<Integer>) actionMap.get(AmazonsGameMessage.QUEEN_POS_NEXT);
         ArrayList<Integer> arrowPos = (ArrayList<Integer>) actionMap.get(AmazonsGameMessage.ARROW_POS);
-        origin = new Pair(fromPos).add(neg);
-        destination = new Pair(toPos).add(neg);
-        arrow = new Pair(arrowPos).add(neg);
+        origin = new Pair(fromPos).add(Pair.neg);
+        destination = new Pair(toPos).add(Pair.neg);
+        arrow = new Pair(arrowPos).add(Pair.neg);
 
         fromRow = origin.y;
         fromCol = origin.x;
@@ -65,9 +63,9 @@ public class Action {
      */
     public Map<String, Object> toServerResponse() {
         Map<String, Object> map = new HashMap<>();
-        map.put(AmazonsGameMessage.QUEEN_POS_CURR, origin.add(pos).toIntArr());
-        map.put(AmazonsGameMessage.QUEEN_POS_NEXT, destination.add(pos).toIntArr());
-        map.put(AmazonsGameMessage.ARROW_POS, arrow.add(pos).toIntArr());
+        map.put(AmazonsGameMessage.QUEEN_POS_CURR, origin.add(Pair.pos).toIntArr());
+        map.put(AmazonsGameMessage.QUEEN_POS_NEXT, destination.add(Pair.pos).toIntArr());
+        map.put(AmazonsGameMessage.ARROW_POS, arrow.add(Pair.pos).toIntArr());
         return map;
     }
 

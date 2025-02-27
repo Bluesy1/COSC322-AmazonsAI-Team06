@@ -5,6 +5,8 @@ import java.util.Arrays;
 
 public final class Pair {
     public final int x,y;
+    public static final Pair neg = new Pair(-1, -1);
+    public static final Pair pos = new Pair(1, 1);
 
     public Pair(int x, int y) {
         this.x = x;

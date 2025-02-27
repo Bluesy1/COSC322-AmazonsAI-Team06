@@ -11,6 +11,10 @@ import java.util.*;
 
 public class Main extends GamePlayer{
 
+	public static final String ANSI_RESET = "\u001B[0m";
+	public static final String ANSI_RED = "\u001B[31m";
+	public static final String ANSI_GREEN = "\u001B[32m";
+
     private GameClient gameClient = null;
     private BaseGameGUI gamegui = null;
 	private State gameState = null;
@@ -76,21 +80,14 @@ public class Main extends GamePlayer{
 				ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
 				getGameGUI().setGameState(board);
 				gameState = new State(board);
-//				System.out.printf("Board initialized by %s:%n%s%n", messageType, gameState.boardToString());
-//				System.out.println(board);
 			}
 			case GameMessage.GAME_ACTION_START -> {
-//				System.out.println(msgDetails.keySet());
-//				ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
-//				getGameGUI().setGameState(board);
-//				gameState = new State(board);
-//				System.out.printf("Board initialized by %s:%n%s%n", messageType, gameState.boardToString());
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
 				if (isBlack) {
 					// Make a random move
 					ArrayList<Action> moves = Generator.availableMoves(gameState, State.BLACK);
 					Action randomAction = moves.get(new Random().nextInt(moves.size()));
-					System.out.printf("'Chosen' random move: %s\n", randomAction);
+					System.out.printf("'Chosen' random move: %s%n", randomAction);
 					Map<String, Object> response = randomAction.toServerResponse();
 					getGameClient().sendMoveMessage(response);
 					getGameGUI().updateGameState(response);
@@ -98,30 +95,34 @@ public class Main extends GamePlayer{
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
-//				ArrayList<Integer> curPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_CURR);
-//				ArrayList<Integer> newPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.QUEEN_POS_NEXT);
-//				ArrayList<Integer> arrowPos = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.ARROW_POS);
 				getGameGUI().updateGameState(msgDetails);
 				Action action = new Action(msgDetails);
-				System.out.printf("Received opponent move: %s\n", action);
+				System.out.printf("Received opponent move: %s%n", action);
+				boolean valid = Utils.validateMove(gameState, action);
+				if (!valid) {
+					System.out.printf("%sReceived an invalid Move!!!!!%s", ANSI_RED, ANSI_RESET);
+				}
 				gameState = new State(gameState, action);
 				// Make a random move
 				ArrayList<Action> moves = Generator.availableMoves(gameState, isBlack ? State.BLACK : State.WHITE);
+				if (moves.isEmpty()) {
+					System.out.printf("%sNo moves available!! We lost.%s☹️", ANSI_RED, ANSI_RESET);
+				}
 				Action randomAction = moves.get(new Random().nextInt(moves.size()));
-				System.out.printf("'Chosen' random move: %s\n", randomAction);
+				System.out.printf("'Chosen' random move: %s%n", randomAction);
 				Map<String, Object> response = randomAction.toServerResponse();
 				getGameClient().sendMoveMessage(response);
 				getGameGUI().updateGameState(response);
 				gameState = new State(gameState, randomAction);
+				if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
+					System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89", ANSI_GREEN, ANSI_RESET);
+				}
 			}
-			default -> {
-				System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
-			}
+			default -> System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
 		}
 		System.out.println(gameState.boardToString());
     	return true;   	
     }
-    
     
     @Override
     public String userName() {
