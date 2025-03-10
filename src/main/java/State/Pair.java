@@ -19,7 +19,7 @@ public final class Pair {
     }
 
     public ArrayList<Integer> toIntArr() {
-        return new ArrayList<>(Arrays.asList(x, y));
+        return new ArrayList<>(Arrays.asList(y, x));
     }
 
     public Pair transpose() {

@@ -19,14 +19,14 @@ public class State implements Cloneable {
         blackQueens = new Pair[4];
         int numWhiteFound = 0;
         int numBlackFound = 0;
-        for (int i = BOARD_SIZE-1; i >= 0; i--) {
-            for (int j = 0; j < BOARD_SIZE; j++) {
-                int type = gameState.get((j + 1)* 11 + i + 1);
-                switch (gameState.get((j + 1)* 11 + i + 1)) {
-                    case WHITE -> {whiteQueens[numWhiteFound++] = new Pair(i, j);}
-                    case BLACK -> {blackQueens[numBlackFound++] = new Pair(i, j);}
+        for (int col = 0; col < BOARD_SIZE; col++) {
+            for (int row = 0; row < BOARD_SIZE; row++) {
+                int type = gameState.get((row + 1) * 11 + col + 1);
+                switch (type) {
+                    case WHITE -> {whiteQueens[numWhiteFound++] = new Pair(col, row);}
+                    case BLACK -> {blackQueens[numBlackFound++] = new Pair(col, row);}
                 }
-                board[i][j] = type;
+                board[col][row] = type;
             }
         }
     }
@@ -67,8 +67,7 @@ public class State implements Cloneable {
     }
 
     public int getPos(Pair pos) {
-        //noinspection SuspiciousNameCombination
-        return getPos(pos.y, pos.x);
+        return getPos(pos.x, pos.y);
     }
 
     public int getPos(int x, int y) {
@@ -101,6 +100,26 @@ public class State implements Cloneable {
                 switch (getPos(col, row)) {
                     case WHITE -> piece = 'W';
                     case BLACK -> piece = 'B';
+                    case ARROW -> piece = 'X';
+                    default -> piece = '-';
+                }
+                sb.append(String.format("%c ", piece));
+            }
+            sb.append("\n");
+        }
+        sb.append("   a b c d e f g h i j");
+        return sb.toString();
+    }
+
+    public String boardToStringNumbers(){
+        StringBuilder sb = new StringBuilder();
+        for (int row = BOARD_SIZE-1; row >= 0; row--) {
+            sb.append(String.format("%2d ", row + 1));
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                char piece;
+                switch (getPos(col, row)) {
+                    case WHITE -> piece = '2';
+                    case BLACK -> piece = '1';
                     case ARROW -> piece = 'X';
                     default -> piece = '-';
                 }

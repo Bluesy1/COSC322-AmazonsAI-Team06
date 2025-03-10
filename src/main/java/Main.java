@@ -76,7 +76,6 @@ public class Main extends GamePlayer{
 
 		switch (messageType) {
 			case GameMessage.GAME_STATE_BOARD -> {
-				System.out.println(msgDetails.keySet());
 				// noinspection unchecked
 				ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
 				getGameGUI().setGameState(board);
@@ -84,7 +83,7 @@ public class Main extends GamePlayer{
 			}
 			case GameMessage.GAME_ACTION_START -> {
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
-				System.out.printf("%sWe are playing as %s.%s%n", ANSI_RED, isBlack ? "Black" : "White", ANSI_RESET);
+				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a random move
 					Action randomAction = getRandomAction();
@@ -96,8 +95,9 @@ public class Main extends GamePlayer{
 			case GameMessage.GAME_ACTION_MOVE -> {
 				updateGameState(msgDetails);
 				Action action = new Action(msgDetails);
+				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				System.out.printf("Received opponent move: %s%n", action);
-				boolean valid = Utils.validateMove(gameState, action);
+				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK);
 				if (!valid) {
 					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
 				}
