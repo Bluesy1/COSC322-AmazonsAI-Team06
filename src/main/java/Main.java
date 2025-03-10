@@ -29,8 +29,9 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-//		Main player = new Main("Team-06", "Team-06");
-		Main player = new Main("", "");
+		Main player = new Main("Team-06", "");
+		HumanPlayer human = new HumanPlayer();
+		human.Go();
 
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -65,7 +66,6 @@ public class Main extends GamePlayer{
 		}
     }
 
-	@SuppressWarnings("unchecked")
     @Override
     public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
     	//This method will be called by the GameClient when it receives a game-related message
@@ -77,45 +77,44 @@ public class Main extends GamePlayer{
 		switch (messageType) {
 			case GameMessage.GAME_STATE_BOARD -> {
 				System.out.println(msgDetails.keySet());
+				// noinspection unchecked
 				ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
 				getGameGUI().setGameState(board);
 				gameState = new State(board);
 			}
 			case GameMessage.GAME_ACTION_START -> {
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
+				System.out.printf("%sWe are playing as %s.%s%n", ANSI_RED, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a random move
-					ArrayList<Action> moves = Generator.availableMoves(gameState, State.BLACK);
-					Action randomAction = moves.get(new Random().nextInt(moves.size()));
+					Action randomAction = getRandomAction();
+					assert randomAction != null;
 					System.out.printf("'Chosen' random move: %s%n", randomAction);
-					Map<String, Object> response = randomAction.toServerResponse();
-					getGameClient().sendMoveMessage(response);
-					getGameGUI().updateGameState(response);
-					gameState = new State(gameState, randomAction);
+					sendMove(randomAction);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
-				getGameGUI().updateGameState(msgDetails);
+				updateGameState(msgDetails);
 				Action action = new Action(msgDetails);
 				System.out.printf("Received opponent move: %s%n", action);
 				boolean valid = Utils.validateMove(gameState, action);
 				if (!valid) {
-					System.out.printf("%sReceived an invalid Move!!!!!%s", ANSI_RED, ANSI_RESET);
+					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
 				}
 				gameState = new State(gameState, action);
 				// Make a random move
-				ArrayList<Action> moves = Generator.availableMoves(gameState, isBlack ? State.BLACK : State.WHITE);
-				if (moves.isEmpty()) {
-					System.out.printf("%sNo moves available!! We lost.%s☹️", ANSI_RED, ANSI_RESET);
-				}
-				Action randomAction = moves.get(new Random().nextInt(moves.size()));
-				System.out.printf("'Chosen' random move: %s%n", randomAction);
-				Map<String, Object> response = randomAction.toServerResponse();
-				getGameClient().sendMoveMessage(response);
-				getGameGUI().updateGameState(response);
-				gameState = new State(gameState, randomAction);
-				if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
-					System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89", ANSI_GREEN, ANSI_RESET);
+				Action randomAction = getRandomAction();
+				if (randomAction == null) {
+					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
+				} else {
+					System.out.printf("'Chosen' random move: %s%n", randomAction);
+					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED,
+							gameState.getPos(randomAction.getOrigin()) == State.BLACK ? "Black": "White",
+							ANSI_RESET);
+					sendMove(randomAction);
+					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
+						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
+					}
 				}
 			}
 			default -> System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
@@ -123,7 +122,31 @@ public class Main extends GamePlayer{
 		System.out.println(gameState.boardToString());
     	return true;   	
     }
-    
+
+	private Action getRandomAction() {
+		ArrayList<Action> moves = Generator.availableMoves(gameState, isBlack ? State.BLACK : State.WHITE);
+		if (moves.isEmpty()) {
+			return null;
+		}
+		return moves.get(new Random().nextInt(moves.size()));
+	}
+
+	private void sendMove(Action move) {
+		Map<String, Object> payload = move.toServerResponse();
+		getGameClient().sendMoveMessage(payload);
+		updateGameState(payload);
+		gameState = new State(gameState, move);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void updateGameState(Map<String, Object> move) {
+		getGameGUI().updateGameState(
+				(ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_CURR),
+				(ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_NEXT),
+				(ArrayList<Integer>) move.get(AmazonsGameMessage.ARROW_POS)
+		);
+	}
+
     @Override
     public String userName() {
     	return userName;
