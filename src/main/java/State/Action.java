@@ -81,4 +81,16 @@ public class Action {
                 && arrowRow == action.arrowRow
                 && arrowCol == action.arrowCol;
     }
+
+    public Pair getOrigin() {
+        return origin;
+    }
+
+    public Pair getDestination() {
+        return destination;
+    }
+
+    public Pair getArrow() {
+        return arrow;
+    }
 }

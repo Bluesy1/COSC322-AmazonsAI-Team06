@@ -19,7 +19,7 @@ public class State implements Cloneable {
         blackQueens = new Pair[4];
         int numWhiteFound = 0;
         int numBlackFound = 0;
-        for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int i = BOARD_SIZE-1; i >= 0; i--) {
             for (int j = 0; j < BOARD_SIZE; j++) {
                 int type = gameState.get((j + 1)* 11 + i + 1);
                 switch (gameState.get((j + 1)* 11 + i + 1)) {
@@ -96,7 +96,7 @@ public class State implements Cloneable {
         StringBuilder sb = new StringBuilder();
         for (int row = BOARD_SIZE-1; row >= 0; row--) {
             sb.append(String.format("%2d ", row + 1));
-            for (int col = BOARD_SIZE-1; col >= 0; col--) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
                 char piece;
                 switch (getPos(col, row)) {
                     case WHITE -> piece = 'W';

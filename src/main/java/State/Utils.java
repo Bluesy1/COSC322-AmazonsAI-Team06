@@ -24,8 +24,17 @@ public class Utils {
         Pair testPos = oldQueen;
         do {
             testPos = testPos.add(ray);
-            if (state.getPos(testPos) != 0) {
-                return false;
+            try {
+                if (state.getPos(testPos) != 0) {
+                    return false;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                System.out.printf("Error (queencheck): %s\n", e.getMessage());
+                System.out.printf("Origin: %s\n", oldQueen);
+                System.out.printf("Destination: %s\n", newQueen);
+                System.out.printf("Ray: %s\n", ray);
+                System.out.printf("TestPos: %s\n", testPos);
+                throw e;
             }
         } while (!testPos.equals(newQueen));
 
@@ -43,8 +52,17 @@ public class Utils {
         testPos = newQueen;
         do {
             testPos = testPos.add(ray);
-            if ((state.getPos(testPos) != 0) && !testPos.equals(oldQueen)) {
-                return false;
+            try {
+                if ((state.getPos(testPos) != 0) && !testPos.equals(oldQueen)) {
+                    return false;
+                }
+            } catch (IndexOutOfBoundsException e) {
+                System.out.printf("Error (arrowcheck): %s\n", e.getMessage());
+                System.out.printf("Origin: %s\n", newQueen);
+                System.out.printf("Destination: %s\n", arrow);
+                System.out.printf("Ray: %s\n", ray);
+                System.out.printf("TestPos: %s\n", testPos);
+                throw e;
             }
         } while (!testPos.equals(arrow));
 
@@ -52,21 +70,18 @@ public class Utils {
     }
 
     private static Pair calculateRay(Pair origin, Pair destination) {
-        int dx, dy;
-        if (origin.x == destination.x) {
-            dx = 0;
-            dy = origin.y < destination.y ? 1 : -1;
-        } else if (origin.y == destination.y) {
-            dx = origin.x > destination.x ? 1 : -1;
-            dy = 0;
+        int dx = origin.x - destination.x;
+        int dy = origin.y - destination.y;
+        if (dx == 0) {
+            dy = dy > 0 ? -1 : 1;
+        } else if (dy == 0) {
+            dx = dx > 0 ? -1 : 1;
         } else {
-            dx = origin.x - destination.x;
-            dy = origin.y - destination.y;
             if (Math.abs(dx) != Math.abs(dy)) {
                 return null; // Not a valid direction
             }
-            dx = dx < 0 ? -1 : 1;
-            dy = dy < 0 ? -1 : 1;
+            dx = dx < 0 ? 1 : -1;
+            dy = dy < 0 ? 1 : -1;
         }
 
         return new Pair(dx, dy);
