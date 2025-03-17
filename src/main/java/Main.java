@@ -22,7 +22,7 @@ public class Main extends GamePlayer{
     private String userName;
     private final String passwd;
 	private boolean isBlack;
-	private final boolean random;
+	private final ActionFactory actionFactory;
 
 
     /**
@@ -30,11 +30,11 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		Main player = new Main("Team-06", "", false);
+		Main player = new Main("Team-06", "", new MinDistanceActionFactory());
 
-		switch (args[0]) {
+		switch (args.length > 0 ? args[0] : "") {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-random", "", true);
+				Main player2 = new Main("Team-06-random", "", new RandomAction());
 				player2.Go();
 			}
 			case "human" -> {
@@ -59,10 +59,10 @@ public class Main extends GamePlayer{
      * @param userName any string (used as display username in gui)
       * @param passwd any string (can be empty)
      */
-    public Main(String userName, String passwd, boolean random) {
+    public Main(String userName, String passwd, ActionFactory actionFactory) {
     	this.userName = userName;
     	this.passwd = passwd;
-		this.random = random;
+		this.actionFactory = actionFactory;
     	
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
@@ -99,9 +99,9 @@ public class Main extends GamePlayer{
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a move
-					Action move = random? getRandomAction() : getBFSAction();
+					Action move = actionFactory.getAction(gameState, true);
 					assert move != null;
-					System.out.printf("Chosen %s move: %s%n",random? "random": "min-distance", move);
+					System.out.printf("Chosen move: %s%n", move);
 					sendMove(move);
 				}
 			}
@@ -116,11 +116,11 @@ public class Main extends GamePlayer{
 				}
 				gameState = new State(gameState, action);
 				// Make a move
-				Action move = random? getRandomAction() : getBFSAction();
+				Action move = actionFactory.getAction(gameState, isBlack);
 				if (move == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
-					System.out.printf("Chosen %s move: %s%n",random? "random": "min-distance", move);
+					System.out.printf("Chosen move: %s%n", move);
 					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED, isBlack ? "Black": "White", ANSI_RESET);
 					sendMove(move);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
@@ -133,44 +133,6 @@ public class Main extends GamePlayer{
 		System.out.println(gameState.boardToString());
     	return true;   	
     }
-
-	private Action getRandomAction() {
-		ArrayList<Action> moves = Generator.availableMoves(gameState, isBlack ? State.BLACK : State.WHITE);
-		if (moves.isEmpty()) {
-			return null;
-		}
-		return moves.get(new Random().nextInt(moves.size()));
-	}
-
-	private Action getBFSAction() {
-		//long endTime = System.currentTimeMillis() + 28000;
-
-		int ourColor = isBlack ? State.BLACK : State.WHITE;
-		ArrayList<Action> ourMoves = Generator.availableMoves(gameState, ourColor);
-		Collections.shuffle(ourMoves);
-		if (ourMoves.isEmpty()) {
-			return null;
-		}
-
-		int currentControl = Integer.MIN_VALUE;
-		Action bfsAction = null;
-		for (Action action : ourMoves) {
-			if (!Utils.validateMove(gameState, action, ourColor, false)) {continue;}
-			State actionOutcome = new State(gameState, action);
-			Pair[] ourQueens = actionOutcome.getQueens(ourColor);
-			Pair[] theirQueens = actionOutcome.getQueens(isBlack ? State.WHITE : State.BLACK);
-			int[][] board = actionOutcome.getBoard();
-
-			int tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
-			if (tempControl > currentControl) {
-				bfsAction = action;
-				currentControl = tempControl;
-			}
-			//if (System.currentTimeMillis() > endTime) break;
-		}
-
-		return bfsAction;
-	}
 
 	private void sendMove(Action move) {
 		Map<String, Object> payload = move.toServerResponse();

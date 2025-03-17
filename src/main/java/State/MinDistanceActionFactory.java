@@ -1,12 +1,40 @@
-
-
-import State.Pair;
+package State;
 
 import java.util.*;
 
-public class BFSMinDistance {
+public class MinDistanceActionFactory implements ActionFactory {
+
     private static final int[] DR = {-1, 1, 0, 0, -1, -1, 1, 1};
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
+
+    public Action getAction(State state, boolean black) {
+        int color = black ? State.BLACK : State.WHITE;
+        ArrayList<Action> moves = Generator.availableMoves(state, color);
+
+        Collections.shuffle(moves);
+        if (moves.isEmpty()) {
+            return null;
+        }
+
+        int currentControl = Integer.MIN_VALUE;
+        Action bfsAction = null;
+        for (Action action : moves) {
+            if (!Utils.validateMove(state, action, color, false)) {continue;}
+            State actionOutcome = new State(state, action);
+            Pair[] ourQueens = actionOutcome.getQueens(color);
+            Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
+            int[][] board = actionOutcome.getBoard();
+
+            int tempControl = minDistanceEvaluation(board, ourQueens, theirQueens);
+            if (tempControl > currentControl) {
+                bfsAction = action;
+                currentControl = tempControl;
+            }
+            //if (System.currentTimeMillis() > endTime) break;
+        }
+
+        return bfsAction;
+    }
 
     public static int[][] bfsMinDistance(int[][] board, int startRow, int startCol) {
         int rows = board.length, cols = board[0].length;
