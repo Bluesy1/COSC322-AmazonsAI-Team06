@@ -132,7 +132,8 @@ public class Main extends GamePlayer{
 	}
 
 	private Action getBFSAction() {
-
+		long startTime = System.currentTimeMillis();
+		long endTime = System.currentTimeMillis() + 28000;
 
 		int ourColor = isBlack ? State.BLACK : State.WHITE;
 		ArrayList<Action> ourMoves = Generator.availableMoves(gameState, ourColor);
@@ -150,6 +151,7 @@ public class Main extends GamePlayer{
 
 			int tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
 			if (tempControl > currentControl) {bfsAction = action;}
+			if (System.currentTimeMillis() > endTime) {break;}
 		}
 
 		return bfsAction;
