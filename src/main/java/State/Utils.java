@@ -6,7 +6,7 @@ public class Utils {
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_BOLD = "\u001B[1m";
 
-    public static boolean validateMove(State state, Action action, int color) {
+    public static boolean validateMove(State state, Action action, int color, boolean verbose) {
 
         Pair oldQueen = action.origin;
         Pair newQueen = action.destination;
@@ -17,31 +17,38 @@ public class Utils {
         }
         int oldQueenTileData = state.getPos(oldQueen);
         if (oldQueenTileData != color) {
-            System.out.println(
-                ANSI_RESET + ANSI_RED + ANSI_BOLD
-                    + "Error: Move Invalid (No Queen or wrong queen at move origin "
-                    + oldQueen + "), got "
-                    + oldQueenTileData + ", expected " + color + ":" + ANSI_RESET
-            );
-            System.out.println(state.boardToStringNumbers());
+            if (verbose) {
+                System.out.println(
+                        ANSI_RESET + ANSI_RED + ANSI_BOLD
+                                + "Error: Move Invalid (No Queen or wrong queen at move origin "
+                                + oldQueen + "), got "
+                                + oldQueenTileData + ", expected " + color + ":" + ANSI_RESET
+                );
+                System.out.println(state.boardToStringNumbers());
+            }
             return false;
         }
 
         if (state.getPos(newQueen) != 0) {
-            System.out.println(ANSI_RESET + ANSI_RED + ANSI_BOLD + "Error: Move Invalid (Queen Destination Occupied)." + ANSI_RESET);
-            System.out.println(state.boardToString());
+            if (verbose) {
+                System.out.println(ANSI_RESET + ANSI_RED + ANSI_BOLD + "Error: Move Invalid (Queen Destination Occupied)." + ANSI_RESET);
+                System.out.println(state.boardToString());
+            }
             return false;
         }
 
         if (state.getPos(arrow) != 0 && !oldQueen.equals(arrow)) {
-            System.out.println(ANSI_RESET + ANSI_RED + ANSI_BOLD + "Error: Move Invalid (Arrow Destination Occupied)." + ANSI_RESET);
-            System.out.println(state.boardToString());
+            if (verbose) {
+                System.out.println(ANSI_RESET + ANSI_RED + ANSI_BOLD + "Error: Move Invalid (Arrow Destination Occupied)." + ANSI_RESET);
+                System.out.println(state.boardToString());
+            }
             return false;
         }
 
         // Validate that the positions are in bound
         if (!(oldQueen.isInBounds() && newQueen.isInBounds() && arrow.isInBounds())) {
-            System.out.printf("%sError: Move Invalid (Position OOB):%nOld Queen: %s%nNew Queen: %s%nArrow: %s%n%s%n",
+            if (verbose)
+                System.out.printf("%sError: Move Invalid (Position OOB):%nOld Queen: %s%nNew Queen: %s%nArrow: %s%n%s%n",
                     ANSI_RESET + ANSI_RED + ANSI_BOLD,
                     oldQueen,
                     newQueen,
@@ -52,7 +59,8 @@ public class Utils {
 
         // Confirm that the old and new queen positions are different, as are the new position and the arrow position
         if (oldQueen.equals(newQueen) || newQueen.equals(arrow)) {
-            System.out.printf("%sError: Move Invalid (Queen Stationary or shooting self):%nOld Queen: %s%nNew Queen: %s%nArrow: %s%n%s%n",
+            if (verbose)
+                System.out.printf("%sError: Move Invalid (Queen Stationary or shooting self):%nOld Queen: %s%nNew Queen: %s%nArrow: %s%n%s%n",
                     ANSI_RESET + ANSI_RED + ANSI_BOLD,
                     oldQueen,
                     newQueen,
@@ -63,7 +71,8 @@ public class Utils {
 
         Pair ray = calculateRay(oldQueen, newQueen);
         if (ray == null) {
-            System.out.printf("%sError: Move Invalid (Queen Move Ray cast Failed):%nOld Queen: %s%nNew Queen: %s%s%n",
+            if (verbose)
+                System.out.printf("%sError: Move Invalid (Queen Move Ray cast Failed):%nOld Queen: %s%nNew Queen: %s%s%n",
                     ANSI_RESET + ANSI_RED + ANSI_BOLD,
                     oldQueen,
                     newQueen,
@@ -75,7 +84,8 @@ public class Utils {
             testPos = testPos.add(ray);
             try {
                 if (state.getPos(testPos) != 0) {
-                    System.out.printf("%sError: Move Invalid (Queen path check Failed):%nOld Queen: %s%nNew Queen: %s%nFailed At: %s%s%n",
+                    if (verbose)
+                        System.out.printf("%sError: Move Invalid (Queen path check Failed):%nOld Queen: %s%nNew Queen: %s%nFailed At: %s%s%n",
                             ANSI_RESET + ANSI_RED + ANSI_BOLD,
                             oldQueen,
                             newQueen,
@@ -103,7 +113,8 @@ public class Utils {
 
         ray = calculateRay(newQueen, arrow);
         if (ray == null) {
-            System.out.printf("%sError: Move Invalid (Arrow Ray cast Failed):%nOld Queen: %s%nNew Queen: %s%s%n",
+            if (verbose)
+                System.out.printf("%sError: Move Invalid (Arrow Ray cast Failed):%nOld Queen: %s%nNew Queen: %s%s%n",
                     ANSI_RESET + ANSI_RED + ANSI_BOLD,
                     newQueen,
                     arrow,
@@ -116,7 +127,8 @@ public class Utils {
             testPos = testPos.add(ray);
             try {
                 if ((state.getPos(testPos) != 0) && !testPos.equals(oldQueen)) {
-                    System.out.printf("%sError: Move Invalid (Arrow path check Failed):%nNew Queen: %s%nArrow: %s%nFailed At: %s%s%n",
+                    if (verbose)
+                        System.out.printf("%sError: Move Invalid (Arrow path check Failed):%nNew Queen: %s%nArrow: %s%nFailed At: %s%s%n",
                             ANSI_RESET + ANSI_RED + ANSI_BOLD,
                             newQueen,
                             arrow,

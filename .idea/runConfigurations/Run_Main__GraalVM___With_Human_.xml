@@ -5,6 +5,8 @@
     <option name="MAIN_CLASS_NAME" value="Main" />
     <module name="Team 06" />
     <option name="PROGRAM_PARAMETERS" value="human" />
-    <method v="2" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
   </configuration>
 </component>

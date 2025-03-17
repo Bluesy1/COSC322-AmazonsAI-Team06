@@ -95,7 +95,7 @@ public class Main extends GamePlayer{
 			case GameMessage.GAME_ACTION_START -> {
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
-				if (!isBlack) {
+				if (isBlack) {
 					// Make a BFS move
 					Action bfsAction = getBFSAction();
 					assert bfsAction != null;
@@ -108,7 +108,7 @@ public class Main extends GamePlayer{
 				Action action = new Action(msgDetails);
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				System.out.printf("Received opponent move: %s%n", action);
-				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK);
+				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK, true);
 				if (!valid) {
 					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
 				}
@@ -155,7 +155,7 @@ public class Main extends GamePlayer{
 		int currentControl = 0;
 		Action bfsAction = null;
 		for (Action action : ourMoves) {
-			if (!Utils.validateMove(gameState, action, ourColor)) {continue;}
+			if (!Utils.validateMove(gameState, action, ourColor, false)) {continue;}
 			int tempControl = 0;
 			State actionOutcome = new State(gameState, action);
 			Pair[] ourQueens = actionOutcome.getQueens(ourColor);
