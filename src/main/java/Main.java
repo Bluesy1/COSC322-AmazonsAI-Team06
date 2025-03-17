@@ -22,6 +22,7 @@ public class Main extends GamePlayer{
     private String userName = null;
     private String passwd = null;
 	private boolean isBlack;
+	private boolean random;
 
 
     /**
@@ -29,11 +30,11 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		Main player = new Main("Team-06", "");
+		Main player = new Main("Team-06", "", false);
 
 		switch (args[0]) {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-2", "");
+				Main player2 = new Main("Team-06-random", "", true);
 				player2.Go();
 			}
 			case "human" -> {
@@ -58,9 +59,10 @@ public class Main extends GamePlayer{
      * @param userName
       * @param passwd
      */
-    public Main(String userName, String passwd) {
+    public Main(String userName, String passwd, boolean random) {
     	this.userName = userName;
     	this.passwd = passwd;
+		this.random = random;
     	
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
@@ -96,11 +98,11 @@ public class Main extends GamePlayer{
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
-					// Make a BFS move
-					Action bfsAction = getBFSAction();
-					assert bfsAction != null;
-					System.out.printf("'Chosen' random move: %s%n", bfsAction);
-					sendMove(bfsAction);
+					// Make a move
+					Action move = random? getRandomAction() : getBFSAction();
+					assert move != null;
+					System.out.printf("Chosen %s move: %s%n",random? "random": "min-distance", move);
+					sendMove(move);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
@@ -113,14 +115,14 @@ public class Main extends GamePlayer{
 					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
 				}
 				gameState = new State(gameState, action);
-				// Make a BFS move
-				Action bfsAction = getBFSAction();
-				if (bfsAction == null) {
+				// Make a move
+				Action move = random? getRandomAction() : getBFSAction();
+				if (move == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
-					System.out.printf("'Chosen' random move: %s%n", bfsAction);
+					System.out.printf("Chosen %s move: %s%n",random? "random": "min-distance", move);
 					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED, isBlack ? "Black": "White", ANSI_RESET);
-					sendMove(bfsAction);
+					sendMove(move);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
 						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
 					}
