@@ -44,14 +44,14 @@ public class BFSMinDistance {
         for (int[] row : opponentReach) Arrays.fill(row, Integer.MAX_VALUE);
 
         for (int i = 0; i < playerAmazons.length; i++) {
-            int[][] distances = bfsMinDistance(board, playerAmazons[i].x, playerAmazons[i].y);
+            int[][] distances = bfsMinDistance(board, playerAmazons[i].col, playerAmazons[i].row);
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
                     playerReach[r][c] = Math.min(playerReach[r][c], distances[r][c]);
         }
 
         for (int i = 0; i < opponentAmazons.length; i++) {
-            int[][] distances = bfsMinDistance(board, opponentAmazons[i].x, opponentAmazons[i].y);
+            int[][] distances = bfsMinDistance(board, opponentAmazons[i].col, opponentAmazons[i].row);
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
                     opponentReach[r][c] = Math.min(opponentReach[r][c], distances[r][c]);

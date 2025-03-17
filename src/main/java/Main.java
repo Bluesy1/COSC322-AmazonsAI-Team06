@@ -156,13 +156,12 @@ public class Main extends GamePlayer{
 		Action bfsAction = null;
 		for (Action action : ourMoves) {
 			if (!Utils.validateMove(gameState, action, ourColor, false)) {continue;}
-			int tempControl = 0;
 			State actionOutcome = new State(gameState, action);
 			Pair[] ourQueens = actionOutcome.getQueens(ourColor);
-			Pair[] theirQueens = actionOutcome.getQueens(ourColor == State.BLACK ? ourColor+1 : ourColor-1);
+			Pair[] theirQueens = actionOutcome.getQueens(isBlack ? State.WHITE : State.BLACK);
 			int[][] board = actionOutcome.getBoard();
 
-			tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
+			int tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
 			if (tempControl > currentControl) {
 				bfsAction = action;
 				currentControl = tempControl;

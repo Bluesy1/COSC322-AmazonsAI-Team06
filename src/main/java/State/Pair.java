@@ -4,47 +4,42 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public final class Pair {
-    public final int x,y;
+    public final int col, row;
     public static final Pair neg = new Pair(-1, -1);
     public static final Pair pos = new Pair(1, 1);
 
-    public Pair(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public Pair(int col, int row) {
+        this.col = col;
+        this.row = row;
     }
 
     public Pair(ArrayList<Integer> intArr) {
-        this.x = intArr.get(1);
-        this.y = intArr.get(0);
+        this.col = intArr.get(1);
+        this.row = intArr.get(0);
     }
 
     public ArrayList<Integer> toIntArr() {
-        return new ArrayList<>(Arrays.asList(y, x));
-    }
-
-    public Pair transpose() {
-        //noinspection SuspiciousNameCombination
-        return new Pair(y, x);
+        return new ArrayList<>(Arrays.asList(row, col));
     }
 
     public Pair add(Pair p) {
-        return new Pair(x + p.x, y + p.y);
+        return new Pair(col + p.col, row + p.row);
     }
 
     public boolean isInBounds() {
-        return x >= 0 && x < State.BOARD_SIZE
-                && y >= 0 && y < State.BOARD_SIZE;
+        return col >= 0 && col < State.BOARD_SIZE
+                && row >= 0 && row < State.BOARD_SIZE;
     }
 
     @Override
     public String toString() {
-        return String.format("(%d,%d)", x, y);
+        return String.format("(%d,%d)", col, row);
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Pair pair) {
-            return pair.x == this.x && pair.y == this.y;
+            return pair.col == this.col && pair.row == this.row;
         }
         return false;
     }

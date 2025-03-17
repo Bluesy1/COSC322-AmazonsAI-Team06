@@ -71,7 +71,7 @@ public class State implements Cloneable {
     }
 
     public int getPos(Pair pos) {
-        return getPos(pos.x, pos.y);
+        return getPos(pos.col, pos.row);
     }
 
     public int getPos(int x, int y) {

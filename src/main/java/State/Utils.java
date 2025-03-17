@@ -152,8 +152,8 @@ public class Utils {
     }
 
     private static Pair calculateRay(Pair origin, Pair destination) {
-        int dx = origin.x - destination.x;
-        int dy = origin.y - destination.y;
+        int dx = origin.col - destination.col;
+        int dy = origin.row - destination.row;
         if (dx == 0) {
             dy = dy > 0 ? -1 : 1;
         } else if (dy == 0) {

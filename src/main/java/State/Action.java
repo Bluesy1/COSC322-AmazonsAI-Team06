@@ -23,12 +23,12 @@ public class Action {
         destination = new Pair(toPos).add(Pair.neg);
         arrow = new Pair(arrowPos).add(Pair.neg);
 
-        fromRow = origin.y;
-        fromCol = origin.x;
-        toRow = destination.y;
-        toCol = destination.x;
-        arrowRow = arrow.y;
-        arrowCol = arrow.x;
+        fromRow = origin.row;
+        fromCol = origin.col;
+        toRow = destination.row;
+        toCol = destination.col;
+        arrowRow = arrow.row;
+        arrowCol = arrow.col;
     }
 
     public Action(Pair origin, Pair destination, Pair arrow) {
@@ -36,12 +36,12 @@ public class Action {
         this.destination = destination;
         this.arrow = arrow;
 
-        fromRow = origin.x;
-        fromCol = origin.y;
-        toRow = destination.x;
-        toCol = destination.y;
-        arrowRow = arrow.x;
-        arrowCol = arrow.y;
+        fromRow = origin.row;
+        fromCol = origin.col;
+        toRow = destination.row;
+        toCol = destination.col;
+        arrowRow = arrow.row;
+        arrowCol = arrow.col;
     }
 
     /**
