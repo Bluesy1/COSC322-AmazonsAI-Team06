@@ -16,13 +16,13 @@ public class Main extends GamePlayer{
 	public static final String ANSI_GREEN = "\u001B[32m";
 
     private GameClient gameClient = null;
-    private BaseGameGUI gamegui = null;
+    private final BaseGameGUI gameGui;
 	private State gameState = null;
 
-    private String userName = null;
-    private String passwd = null;
+    private String userName;
+    private final String passwd;
 	private boolean isBlack;
-	private boolean random;
+	private final boolean random;
 
 
     /**
@@ -56,8 +56,8 @@ public class Main extends GamePlayer{
 
     /**
      * Any name and passwd
-     * @param userName
-      * @param passwd
+     * @param userName any string (used as display username in gui)
+      * @param passwd any string (can be empty)
      */
     public Main(String userName, String passwd, boolean random) {
     	this.userName = userName;
@@ -66,7 +66,7 @@ public class Main extends GamePlayer{
     	
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
-    	this.gamegui = new BaseGameGUI(this);
+    	this.gameGui = new BaseGameGUI(this);
     }
  
 
@@ -74,8 +74,8 @@ public class Main extends GamePlayer{
     @Override
     public void onLogin() {
 		userName = gameClient.getUserName();
-		if(gamegui != null) {
-			gamegui.setRoomInformation(gameClient.getRoomList());
+		if(gameGui != null) {
+			gameGui.setRoomInformation(gameClient.getRoomList());
 		}
     }
 
@@ -200,7 +200,7 @@ public class Main extends GamePlayer{
 
 	@Override
 	public BaseGameGUI getGameGUI() {
-		return  this.gamegui;
+		return  this.gameGui;
 	}
 
 	@Override
