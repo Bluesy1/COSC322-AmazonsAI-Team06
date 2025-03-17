@@ -32,6 +32,9 @@ public class Main extends GamePlayer{
 		Main player = new Main("Team-06", "");
 		Main player2 = new Main("Team-06-2", "");
 
+//		HumanPlayer human = new HumanPlayer();
+//		human.Go();
+
     	if(player.getGameGUI() == null) {
     		player.Go();
     	}
