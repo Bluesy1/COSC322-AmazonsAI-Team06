@@ -119,9 +119,7 @@ public class Main extends GamePlayer{
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
 					System.out.printf("'Chosen' random move: %s%n", bfsAction);
-					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED,
-							gameState.getPos(bfsAction.getOrigin()) == State.BLACK ? "Black": "White",
-							ANSI_RESET);
+					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED, isBlack ? "Black": "White", ANSI_RESET);
 					sendMove(bfsAction);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
 						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
