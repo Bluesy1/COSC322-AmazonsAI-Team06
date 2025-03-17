@@ -102,16 +102,16 @@ public class Main extends GamePlayer{
 					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
 				}
 				gameState = new State(gameState, action);
-				// Make a random move
-				Action randomAction = getRandomAction();
-				if (randomAction == null) {
+				// Make a BFS move
+				Action bfsAction = getBFSAction();
+				if (bfsAction == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
-					System.out.printf("'Chosen' random move: %s%n", randomAction);
+					System.out.printf("'Chosen' random move: %s%n", bfsAction);
 					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED,
-							gameState.getPos(randomAction.getOrigin()) == State.BLACK ? "Black": "White",
+							gameState.getPos(bfsAction.getOrigin()) == State.BLACK ? "Black": "White",
 							ANSI_RESET);
-					sendMove(randomAction);
+					sendMove(bfsAction);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
 						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
 					}
@@ -129,6 +129,30 @@ public class Main extends GamePlayer{
 			return null;
 		}
 		return moves.get(new Random().nextInt(moves.size()));
+	}
+
+	private Action getBFSAction() {
+
+
+		int ourColor = isBlack ? State.BLACK : State.WHITE;
+		ArrayList<Action> ourMoves = Generator.availableMoves(gameState, ourColor);
+		if (ourMoves.isEmpty()) {
+			return null;
+		}
+
+		int currentControl = 0;
+		Action bfsAction = null;
+		for (Action action : ourMoves) {
+			State actionOutcome = new State(gameState, action);
+			Pair[] ourQueens = actionOutcome.getQueens(ourColor);
+			Pair[] theirQueens = actionOutcome.getQueens(ourColor == State.BLACK ? ourColor++ : ourColor--);
+			int[][] board = actionOutcome.getBoard();
+
+			int tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
+			if (tempControl > currentControl) {bfsAction = action;}
+		}
+
+		return bfsAction;
 	}
 
 	private void sendMove(Action move) {

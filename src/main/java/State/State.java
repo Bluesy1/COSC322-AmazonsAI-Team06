@@ -131,4 +131,7 @@ public class State implements Cloneable {
         return sb.toString();
     }
 
+    public int[][] getBoard() {
+        return board;
+    }
 }
