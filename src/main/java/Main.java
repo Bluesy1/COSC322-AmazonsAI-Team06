@@ -137,6 +137,7 @@ public class Main extends GamePlayer{
 
 		int ourColor = isBlack ? State.BLACK : State.WHITE;
 		ArrayList<Action> ourMoves = Generator.availableMoves(gameState, ourColor);
+		Collections.shuffle(ourMoves);
 		if (ourMoves.isEmpty()) {
 			return null;
 		}
