@@ -30,10 +30,19 @@ public class Main extends GamePlayer{
      */
     public static void main(String[] args) {
 		Main player = new Main("Team-06", "");
-		Main player2 = new Main("Team-06-2", "");
 
-//		HumanPlayer human = new HumanPlayer();
-//		human.Go();
+		switch (args[0]) {
+			case "2"  -> {
+				Main player2 = new Main("Team-06-2", "");
+				player2.Go();
+			}
+			case "human" -> {
+				HumanPlayer human = new HumanPlayer();
+				human.Go();
+			}
+			default -> {}
+		}
+
 
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -42,14 +51,6 @@ public class Main extends GamePlayer{
     		BaseGameGUI.sys_setup();
             java.awt.EventQueue.invokeLater(player::Go);
     	}
-
-		if(player2.getGameGUI() == null) {
-			player2.Go();
-		}
-		else {
-			BaseGameGUI.sys_setup();
-			java.awt.EventQueue.invokeLater(player2::Go);
-		}
     }
 
     /**
