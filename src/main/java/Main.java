@@ -152,7 +152,7 @@ public class Main extends GamePlayer{
 			return null;
 		}
 
-		int currentControl = 0;
+		int currentControl = Integer.MIN_VALUE;
 		Action bfsAction = null;
 		for (Action action : ourMoves) {
 			if (!Utils.validateMove(gameState, action, ourColor, false)) {continue;}
