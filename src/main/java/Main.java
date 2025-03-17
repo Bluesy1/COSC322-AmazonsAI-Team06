@@ -30,8 +30,7 @@ public class Main extends GamePlayer{
      */
     public static void main(String[] args) {
 		Main player = new Main("Team-06", "");
-		HumanPlayer human = new HumanPlayer();
-		human.Go();
+		Main player2 = new Main("Team-06-2", "");
 
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -40,6 +39,14 @@ public class Main extends GamePlayer{
     		BaseGameGUI.sys_setup();
             java.awt.EventQueue.invokeLater(player::Go);
     	}
+
+		if(player2.getGameGUI() == null) {
+			player2.Go();
+		}
+		else {
+			BaseGameGUI.sys_setup();
+			java.awt.EventQueue.invokeLater(player2::Go);
+		}
     }
 
     /**
@@ -84,12 +91,12 @@ public class Main extends GamePlayer{
 			case GameMessage.GAME_ACTION_START -> {
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
-				if (isBlack) {
-					// Make a random move
-					Action randomAction = getRandomAction();
-					assert randomAction != null;
-					System.out.printf("'Chosen' random move: %s%n", randomAction);
-					sendMove(randomAction);
+				if (!isBlack) {
+					// Make a BFS move
+					Action bfsAction = getBFSAction();
+					assert bfsAction != null;
+					System.out.printf("'Chosen' random move: %s%n", bfsAction);
+					sendMove(bfsAction);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
@@ -132,8 +139,7 @@ public class Main extends GamePlayer{
 	}
 
 	private Action getBFSAction() {
-		long startTime = System.currentTimeMillis();
-		long endTime = System.currentTimeMillis() + 28000;
+		//long endTime = System.currentTimeMillis() + 28000;
 
 		int ourColor = isBlack ? State.BLACK : State.WHITE;
 		ArrayList<Action> ourMoves = Generator.availableMoves(gameState, ourColor);
@@ -145,14 +151,19 @@ public class Main extends GamePlayer{
 		int currentControl = 0;
 		Action bfsAction = null;
 		for (Action action : ourMoves) {
+			if (!Utils.validateMove(gameState, action, ourColor)) {continue;}
+			int tempControl = 0;
 			State actionOutcome = new State(gameState, action);
 			Pair[] ourQueens = actionOutcome.getQueens(ourColor);
-			Pair[] theirQueens = actionOutcome.getQueens(ourColor == State.BLACK ? ourColor++ : ourColor--);
+			Pair[] theirQueens = actionOutcome.getQueens(ourColor == State.BLACK ? ourColor+1 : ourColor-1);
 			int[][] board = actionOutcome.getBoard();
 
-			int tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
-			if (tempControl > currentControl) {bfsAction = action;}
-			if (System.currentTimeMillis() > endTime) {break;}
+			tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
+			if (tempControl > currentControl) {
+				bfsAction = action;
+				currentControl = tempControl;
+			}
+			//if (System.currentTimeMillis() > endTime) break;
 		}
 
 		return bfsAction;
