@@ -34,7 +34,11 @@ public class State implements Cloneable {
     public State(State state, Action action) {
         this.whiteQueens = state.whiteQueens.clone();
         this.blackQueens = state.blackQueens.clone();
-        this.board = state.board.clone();
+        this.board = new int[BOARD_SIZE][BOARD_SIZE];
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            System.arraycopy(state.board[i], 0, this.board[i], 0, BOARD_SIZE);
+        }
+//        this.board = state.board.clone();
 
         int movingPiece = getPos(action.fromCol, action.fromRow);
         setPiece(action.toCol, action.toRow, movingPiece);
@@ -67,7 +71,7 @@ public class State implements Cloneable {
     }
 
     public int getPos(Pair pos) {
-        return getPos(pos.x, pos.y);
+        return getPos(pos.col, pos.row);
     }
 
     public int getPos(int x, int y) {
@@ -131,4 +135,7 @@ public class State implements Cloneable {
         return sb.toString();
     }
 
+    public int[][] getBoard() {
+        return board;
+    }
 }

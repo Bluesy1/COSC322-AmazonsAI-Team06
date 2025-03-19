@@ -16,12 +16,13 @@ public class Main extends GamePlayer{
 	public static final String ANSI_GREEN = "\u001B[32m";
 
     private GameClient gameClient = null;
-    private BaseGameGUI gamegui = null;
+    private final BaseGameGUI gameGui;
 	private State gameState = null;
 
-    private String userName = null;
-    private String passwd = null;
+    private String userName;
+    private final String passwd;
 	private boolean isBlack;
+	private final boolean random;
 
 
     /**
@@ -29,9 +30,20 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		Main player = new Main("Team-06", "");
-		HumanPlayer human = new HumanPlayer();
-		human.Go();
+		Main player = new Main("Team-06", "", false);
+
+		switch (args[0]) {
+			case "2"  -> {
+				Main player2 = new Main("Team-06-random", "", true);
+				player2.Go();
+			}
+			case "human" -> {
+				HumanPlayer human = new HumanPlayer();
+				human.Go();
+			}
+			default -> {}
+		}
+
 
     	if(player.getGameGUI() == null) {
     		player.Go();
@@ -44,16 +56,17 @@ public class Main extends GamePlayer{
 
     /**
      * Any name and passwd
-     * @param userName
-      * @param passwd
+     * @param userName any string (used as display username in gui)
+      * @param passwd any string (can be empty)
      */
-    public Main(String userName, String passwd) {
+    public Main(String userName, String passwd, boolean random) {
     	this.userName = userName;
     	this.passwd = passwd;
+		this.random = random;
     	
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
-    	this.gamegui = new BaseGameGUI(this);
+    	this.gameGui = new BaseGameGUI(this);
     }
  
 
@@ -61,8 +74,8 @@ public class Main extends GamePlayer{
     @Override
     public void onLogin() {
 		userName = gameClient.getUserName();
-		if(gamegui != null) {
-			gamegui.setRoomInformation(gameClient.getRoomList());
+		if(gameGui != null) {
+			gameGui.setRoomInformation(gameClient.getRoomList());
 		}
     }
 
@@ -85,11 +98,11 @@ public class Main extends GamePlayer{
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
-					// Make a random move
-					Action randomAction = getRandomAction();
-					assert randomAction != null;
-					System.out.printf("'Chosen' random move: %s%n", randomAction);
-					sendMove(randomAction);
+					// Make a move
+					Action move = random? getRandomAction() : getBFSAction();
+					assert move != null;
+					System.out.printf("Chosen %s move: %s%n",random? "random": "min-distance", move);
+					sendMove(move);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
@@ -97,21 +110,19 @@ public class Main extends GamePlayer{
 				Action action = new Action(msgDetails);
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				System.out.printf("Received opponent move: %s%n", action);
-				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK);
+				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK, true);
 				if (!valid) {
 					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
 				}
 				gameState = new State(gameState, action);
-				// Make a random move
-				Action randomAction = getRandomAction();
-				if (randomAction == null) {
+				// Make a move
+				Action move = random? getRandomAction() : getBFSAction();
+				if (move == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
-					System.out.printf("'Chosen' random move: %s%n", randomAction);
-					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED,
-							gameState.getPos(randomAction.getOrigin()) == State.BLACK ? "Black": "White",
-							ANSI_RESET);
-					sendMove(randomAction);
+					System.out.printf("Chosen %s move: %s%n",random? "random": "min-distance", move);
+					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED, isBlack ? "Black": "White", ANSI_RESET);
+					sendMove(move);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
 						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
 					}
@@ -129,6 +140,36 @@ public class Main extends GamePlayer{
 			return null;
 		}
 		return moves.get(new Random().nextInt(moves.size()));
+	}
+
+	private Action getBFSAction() {
+		//long endTime = System.currentTimeMillis() + 28000;
+
+		int ourColor = isBlack ? State.BLACK : State.WHITE;
+		ArrayList<Action> ourMoves = Generator.availableMoves(gameState, ourColor);
+		Collections.shuffle(ourMoves);
+		if (ourMoves.isEmpty()) {
+			return null;
+		}
+
+		int currentControl = Integer.MIN_VALUE;
+		Action bfsAction = null;
+		for (Action action : ourMoves) {
+			if (!Utils.validateMove(gameState, action, ourColor, false)) {continue;}
+			State actionOutcome = new State(gameState, action);
+			Pair[] ourQueens = actionOutcome.getQueens(ourColor);
+			Pair[] theirQueens = actionOutcome.getQueens(isBlack ? State.WHITE : State.BLACK);
+			int[][] board = actionOutcome.getBoard();
+
+			int tempControl = BFSMinDistance.minDistanceEvaluation(board, ourQueens, theirQueens);
+			if (tempControl > currentControl) {
+				bfsAction = action;
+				currentControl = tempControl;
+			}
+			//if (System.currentTimeMillis() > endTime) break;
+		}
+
+		return bfsAction;
 	}
 
 	private void sendMove(Action move) {
@@ -159,7 +200,7 @@ public class Main extends GamePlayer{
 
 	@Override
 	public BaseGameGUI getGameGUI() {
-		return  this.gamegui;
+		return  this.gameGui;
 	}
 
 	@Override
