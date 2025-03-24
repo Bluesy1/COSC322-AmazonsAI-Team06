@@ -7,8 +7,8 @@ import java.util.Collections;
 
 public class TerritoryActionFactory implements ActionFactory {
 
-    private static final int AVERAGE_MOVES = 60;
-    private static final double STEEPNESS = 0.1;
+    private static final int AVERAGE_MOVES = 30;
+    private static final double STEEPNESS = 0.05;
 
     @Override
     public Action getAction(State state, boolean black, int movesPlayed) {
