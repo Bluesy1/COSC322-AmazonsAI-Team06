@@ -75,14 +75,21 @@ public class TerritoryActionFactory implements ActionFactory {
     }
 
     public double calculateControl(int[][] board, ArrayList<int[][]> reaches) {
-        int playerControl = 0, opponentControl = 0;
+        double totalControl = 0.0;
         for (int r = 0; r < board.length; r++) {
             for (int c = 0; c < board[0].length; c++) {
-                if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) playerControl++;
-                else opponentControl++;
+                if (reaches.get(0)[r][c] == Integer.MAX_VALUE) totalControl -= 1;
+                else if (reaches.get(1)[r][c] == Integer.MAX_VALUE) totalControl += 1;
+                else {
+                    double numOurMoves = reaches.get(0)[r][c];
+                    double numTheirMoves = reaches.get(1)[r][c];
+                    if (numOurMoves == numTheirMoves) {continue;}
+                    else if (numOurMoves > numTheirMoves) {totalControl += 1 - numOurMoves/numTheirMoves;}
+                    else {totalControl -= 1 - numTheirMoves/numOurMoves;}
+                }
             }
         }
 
-        return playerControl - opponentControl;
+        return totalControl;
     }
 }

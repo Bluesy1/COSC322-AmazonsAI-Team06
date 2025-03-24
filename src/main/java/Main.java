@@ -35,7 +35,7 @@ public class Main extends GamePlayer{
 
 		switch (args.length > 0 ? args[0] : "") {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-reference", "", new RandomAction());
+				Main player2 = new Main("Team-06-reference", "", new TerritoryActionFactory());
 				player2.Go();
 			}
 			case "human" -> {
