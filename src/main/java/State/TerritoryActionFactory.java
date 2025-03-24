@@ -20,7 +20,7 @@ public class TerritoryActionFactory implements ActionFactory {
             return null;
         }
 
-        double currentControl = Double.MIN_VALUE;
+        double currentControl = -Double.MAX_VALUE;
         Action bestAction = null;
         double[] fs = calculateWeights(movesPlayed);
 
