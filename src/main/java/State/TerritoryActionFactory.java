@@ -22,8 +22,7 @@ public class TerritoryActionFactory implements ActionFactory {
 
         double currentControl = Double.MIN_VALUE;
         Action bestAction = null;
-        double[] fs = new double[4];
-        fs = calculateWeights(movesPlayed);
+        double[] fs = calculateWeights(movesPlayed);
 
         for (Action action : moves) {
             if (!Utils.validateMove(state, action, color, false)) {continue;}
@@ -31,7 +30,6 @@ public class TerritoryActionFactory implements ActionFactory {
             Pair[] ourQueens = actionOutcome.getQueens(color);
             Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
             int[][] board = actionOutcome.getBoard();
-            double[] weights = new double[4];
 
             ArrayList<int[][]> queenReaches, kingReaches;
             queenReaches = new ArrayList<>();
