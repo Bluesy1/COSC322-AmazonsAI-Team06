@@ -27,7 +27,18 @@ public class KingDistanceActionFactory implements ActionFactory {
             Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
             int[][] board = actionOutcome.getBoard();
 
-            int tempControl = kingDistanceEvaluation(board, ourQueens, theirQueens);
+            ArrayList<int[][]> reaches = new ArrayList<>();
+            reaches = kingDistanceEvaluation(board, ourQueens, theirQueens);
+
+            int playerControl = 0, opponentControl = 0;
+            for (int r = 0; r < board.length; r++) {
+                for (int c = 0; c < board[0].length; c++) {
+                    if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) playerControl++;
+                    else opponentControl++;
+                }
+            }
+
+            int tempControl = playerControl - opponentControl;
             if (tempControl > currentControl) {
                 kingMinAction = action;
                 currentControl = tempControl;
@@ -67,42 +78,32 @@ public class KingDistanceActionFactory implements ActionFactory {
         return distances;
     }
 
-    public static int kingDistanceEvaluation(int[][] board, Pair[] playerAmazons, Pair[] opponentAmazons) {
+    public static ArrayList<int[][]> kingDistanceEvaluation(int[][] board, Pair[] playerAmazons, Pair[] opponentAmazons) {
         int rows = board.length, cols = board[0].length;
-        int[][] playerKingReach = new int[rows][cols];
-        int[][] opponentKingReach = new int[rows][cols];
-        for (int[] row : playerKingReach) Arrays.fill(row, Integer.MAX_VALUE);
-        for (int[] row : opponentKingReach) Arrays.fill(row, Integer.MAX_VALUE);
+        int[][] playerReach = new int[rows][cols];
+        int[][] opponentReach = new int[rows][cols];
+        for (int[] row : playerReach) Arrays.fill(row, Integer.MAX_VALUE);
+        for (int[] row : opponentReach) Arrays.fill(row, Integer.MAX_VALUE);
 
         // Compute minimum king distances for player amazons
-        for (Pair playerAmazon : playerAmazons) {
-            int[][] distances = bfsKingMinDistance(board, playerAmazon.col, playerAmazon.row);
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
-                    playerKingReach[r][c] = Math.min(playerKingReach[r][c], distances[r][c]);
-                }
-            }
-        }
+        reachCalculate(playerReach, board, playerAmazons);
 
         // Compute minimum king distances for opponent amazons
-        for (Pair oppAmazon : opponentAmazons) {
-            int[][] distances = bfsKingMinDistance(board, oppAmazon.col, oppAmazon.row);
-            for (int r = 0; r < rows; r++) {
-                for (int c = 0; c < cols; c++) {
-                    opponentKingReach[r][c] = Math.min(opponentKingReach[r][c], distances[r][c]);
-                }
-            }
-        }
+        reachCalculate(opponentReach, board, opponentAmazons);
 
-        // Calculate control difference
-        int playerControl = 0, opponentControl = 0;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (playerKingReach[r][c] < opponentKingReach[r][c]) playerControl++;
-                else if (opponentKingReach[r][c] < playerKingReach[r][c]) opponentControl++;
-            }
-        }
+        ArrayList<int[][]> reaches = new ArrayList<>();
+        reaches.add(playerReach);
+        reaches.add(opponentReach);
 
-        return playerControl - opponentControl;
+        return reaches;
+    }
+
+    public static void reachCalculate (int[][] reach, int[][] board, Pair[] amazons ) {
+        for (int i = 0; i < amazons.length; i++) {
+            int[][] distances = bfsKingMinDistance(board, amazons[i].col, amazons[i].row);
+            for (int r = 0; r < board.length; r++)
+                for (int c = 0; c < board[0].length; c++)
+                    reach[r][c] = Math.min(reach[r][c], distances[r][c]);
+        }
     }
 }

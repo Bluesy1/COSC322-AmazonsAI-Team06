@@ -16,6 +16,8 @@ public class MinDistanceActionFactory implements ActionFactory {
             return null;
         }
 
+
+
         int currentControl = Integer.MIN_VALUE;
         Action bfsAction = null;
         for (Action action : moves) {
@@ -25,7 +27,18 @@ public class MinDistanceActionFactory implements ActionFactory {
             Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
             int[][] board = actionOutcome.getBoard();
 
-            int tempControl = minDistanceEvaluation(board, ourQueens, theirQueens);
+            ArrayList<int[][]> reaches = new ArrayList<>();
+            reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
+
+            int playerControl = 0, opponentControl = 0;
+            for (int r = 0; r < board.length; r++) {
+                for (int c = 0; c < board[0].length; c++) {
+                    if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) playerControl++;
+                    else opponentControl++;
+                }
+            }
+
+            int tempControl = playerControl - opponentControl;
             if (tempControl > currentControl) {
                 bfsAction = action;
                 currentControl = tempControl;
@@ -63,7 +76,7 @@ public class MinDistanceActionFactory implements ActionFactory {
         return distances;
     }
 
-    public static int minDistanceEvaluation(int[][] board, Pair[] playerAmazons, Pair[] opponentAmazons) {
+    public static ArrayList<int[][]> minDistanceEvaluation(int[][] board, Pair[] playerAmazons, Pair[] opponentAmazons) {
         int rows = board.length, cols = board[0].length;
         int[][] playerReach = new int[rows][cols];
         int[][] opponentReach = new int[rows][cols];
@@ -74,15 +87,11 @@ public class MinDistanceActionFactory implements ActionFactory {
 
         reachCalculate(opponentReach, board, opponentAmazons);
 
-        int playerControl = 0, opponentControl = 0;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (playerReach[r][c] < opponentReach[r][c]) playerControl++;
-                else if (opponentReach[r][c] < playerReach[r][c]) opponentControl++;
-            }
-        }
+        ArrayList<int[][]> reaches = new ArrayList<>();
+        reaches.add(playerReach);
+        reaches.add(opponentReach);
 
-        return playerControl - opponentControl;
+        return reaches;
     }
 
     public static void reachCalculate (int[][] reach, int[][] board, Pair[] amazons ) {
