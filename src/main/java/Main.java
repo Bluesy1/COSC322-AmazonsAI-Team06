@@ -31,11 +31,11 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		Main player = new Main("Team-06", "", new MinDistanceActionFactory());
+		Main player = new Main("Team-06", "", new TerritoryActionFactory());
 
 		switch (args.length > 0 ? args[0] : "") {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-reference", "", new TerritoryActionFactory());
+				Main player2 = new Main("Team-06-reference", "", new MinDistanceActionFactory());
 				player2.Go();
 			}
 			case "human" -> {
