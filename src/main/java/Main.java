@@ -23,6 +23,7 @@ public class Main extends GamePlayer{
     private final String passwd;
 	private boolean isBlack;
 	private final ActionFactory actionFactory;
+	private int moveCounter = 0;
 
 
     /**
@@ -34,7 +35,7 @@ public class Main extends GamePlayer{
 
 		switch (args.length > 0 ? args[0] : "") {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-random", "", new RandomAction());
+				Main player2 = new Main("Team-06-reference", "", new RandomAction());
 				player2.Go();
 			}
 			case "human" -> {
@@ -99,7 +100,8 @@ public class Main extends GamePlayer{
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a move
-					Action move = actionFactory.getAction(gameState, true);
+					Action move = actionFactory.getAction(gameState, true, moveCounter);
+					moveCounter++;
 					assert move != null;
 					System.out.printf("Chosen move: %s%n", move);
 					sendMove(move);
@@ -111,12 +113,14 @@ public class Main extends GamePlayer{
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				System.out.printf("Received opponent move: %s%n", action);
 				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK, true);
+				moveCounter++;
 				if (!valid) {
 					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
 				}
 				gameState = new State(gameState, action);
 				// Make a move
-				Action move = actionFactory.getAction(gameState, isBlack);
+				Action move = actionFactory.getAction(gameState, isBlack, moveCounter);
+				moveCounter++;
 				if (move == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {

@@ -10,7 +10,7 @@ public class TerritoryActionFactory implements ActionFactory {
     private static final int AVERAGE_MOVES = 60;
     private static final double STEEPNESS = 0.1;
 
-
+    @Override
     public Action getAction(State state, boolean black, int movesPlayed) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
@@ -84,10 +84,5 @@ public class TerritoryActionFactory implements ActionFactory {
         }
 
         return playerControl - opponentControl;
-    }
-
-    @Override
-    public Action getAction(State state, boolean black) {
-        return null;
     }
 }

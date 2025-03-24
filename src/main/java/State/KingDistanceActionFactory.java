@@ -8,7 +8,7 @@ public class KingDistanceActionFactory implements ActionFactory {
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
 
     @Override
-    public Action getAction(State state, boolean black) {
+    public Action getAction(State state, boolean black, int movesPlayed) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
 

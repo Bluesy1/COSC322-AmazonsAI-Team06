@@ -11,7 +11,8 @@ public class RandomAction implements ActionFactory {
         random = new Random();
     };
 
-    public Action getAction(State state, boolean black) {
+    @Override
+    public Action getAction(State state, boolean black, int movesPlayed) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
         return moves.get(random.nextInt(moves.size()));

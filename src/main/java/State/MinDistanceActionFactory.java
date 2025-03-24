@@ -7,7 +7,8 @@ public class MinDistanceActionFactory implements ActionFactory {
     private static final int[] DR = {-1, 1, 0, 0, -1, -1, 1, 1};
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
 
-    public Action getAction(State state, boolean black) {
+    @Override
+    public Action getAction(State state, boolean black, int movesPlayed) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
 
