@@ -60,7 +60,12 @@ public class Main extends GamePlayer{
       * @param passwd any string (can be empty)
      */
     public Main(String userName, String passwd, ActionFactory actionFactory) {
-    	this.userName = userName;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(userName);
+		sb.append("-");
+		sb.append((new Random()).nextInt(1000));	
+    	this.userName = sb.toString();
     	this.passwd = passwd;
 		this.actionFactory = actionFactory;
     	
