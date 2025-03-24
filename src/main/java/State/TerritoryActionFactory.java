@@ -7,6 +7,8 @@ public class TerritoryActionFactory implements ActionFactory {
 
     @Override
     public Action getAction(State state, boolean black) {
-        return null;
+
     }
+
+    private calculateF1 (int )
 }

@@ -70,19 +70,9 @@ public class MinDistanceActionFactory implements ActionFactory {
         for (int[] row : playerReach) Arrays.fill(row, Integer.MAX_VALUE);
         for (int[] row : opponentReach) Arrays.fill(row, Integer.MAX_VALUE);
 
-        for (int i = 0; i < playerAmazons.length; i++) {
-            int[][] distances = bfsMinDistance(board, playerAmazons[i].col, playerAmazons[i].row);
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    playerReach[r][c] = Math.min(playerReach[r][c], distances[r][c]);
-        }
+        reachCalculate(playerReach, board, playerAmazons);
 
-        for (int i = 0; i < opponentAmazons.length; i++) {
-            int[][] distances = bfsMinDistance(board, opponentAmazons[i].col, opponentAmazons[i].row);
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    opponentReach[r][c] = Math.min(opponentReach[r][c], distances[r][c]);
-        }
+        reachCalculate(opponentReach, board, opponentAmazons);
 
         int playerControl = 0, opponentControl = 0;
         for (int r = 0; r < rows; r++) {
@@ -93,5 +83,14 @@ public class MinDistanceActionFactory implements ActionFactory {
         }
 
         return playerControl - opponentControl;
+    }
+
+    public static void reachCalculate (int[][] reach, int[][] board, Pair[] amazons ) {
+        for (int i = 0; i < amazons.length; i++) {
+            int[][] distances = bfsMinDistance(board, amazons[i].col, amazons[i].row);
+            for (int r = 0; r < board.length; r++)
+                for (int c = 0; c < board[0].length; c++)
+                    reach[r][c] = Math.min(reach[r][c], distances[r][c]);
+        }
     }
 }
