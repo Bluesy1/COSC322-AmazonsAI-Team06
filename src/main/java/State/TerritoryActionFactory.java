@@ -25,7 +25,6 @@ public class TerritoryActionFactory implements ActionFactory {
         double[] fs = calculateWeights(movesPlayed);
 
         for (Action action : moves) {
-            if (!Utils.validateMove(state, action, color, false)) {continue;}
             State actionOutcome = new State(state, action);
             Pair[] ourQueens = actionOutcome.getQueens(color);
             Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
