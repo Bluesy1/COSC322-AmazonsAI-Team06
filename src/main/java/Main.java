@@ -64,12 +64,14 @@ public class Main extends GamePlayer{
      * @param userName any string (used as display username in gui)
       * @param passwd any string (can be empty)
      */
-    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMCTS) {
-    	this.userName = userName;
+    public Main(String userName, String passwd, ActionFactory actionFactory) {
+    	this.userName = userName +
+                "-" +
+                (new Random()).nextInt(1000);
     	this.passwd = passwd;
 		this.actionFactory = actionFactory;
 		this.useMCTS = useMCTS;
-    	
+
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
     	this.gameGui = new BaseGameGUI(this);
