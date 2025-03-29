@@ -7,8 +7,9 @@ import java.util.Collections;
 
 public class TerritoryActionFactory implements ActionFactory {
 
-    private static final int AVERAGE_MOVES = 30;
-    private static final double STEEPNESS = 0.05;
+    private static final double EPSILON = 0.2;   // Ensures f1 and f4 never drop to zero
+    private static final double C = 6.0;         // Controls speed of game progress ramp-up
+    private static final double K = 0.35;         // Fraction for f2 relative to f1 (and f3 to f4)
 
     @Override
     public Action getAction(State state, boolean black, int movesPlayed) {
@@ -22,7 +23,7 @@ public class TerritoryActionFactory implements ActionFactory {
 
         double currentControl = -Double.MAX_VALUE;
         Action bestAction = null;
-        double[] fs = calculateWeights(movesPlayed);
+        double[] fs = computeValues(movesPlayed);
 
         for (Action action : moves) {
             State actionOutcome = new State(state, action);
@@ -54,23 +55,23 @@ public class TerritoryActionFactory implements ActionFactory {
         return bestAction;
     }
 
-    public double[] calculateWeights(int movesPlayed) {
-        // Step 1: Calculate game progress using a logistic function
-        double progress = 1.0 / (1.0 + Math.exp(-STEEPNESS * (movesPlayed - AVERAGE_MOVES)));
+    public static double[] computeValues(int moves) {
+        // Compute the game progress using a function that increases fast at first, then slows down.
+        // The progress value will be between ε and 1 - ε.
+        double progress = EPSILON + (1 - 2 * EPSILON) * (moves / (moves + C));
 
-        // Step 2: Calculate f1 and f4 based on progress
-        double a = 0.15; // Minimum value for f1 and f4
-        double b = 0.5;  // Range of variation
-        double f1 = a + b * progress;
-        double f4 = a + b * (1.0 - progress);
+        // Determine normalization constant so that the total weight sums to 1.
+        double A = 1.0 / (1.0 + K);
 
-        // Step 3: Calculate f2 and f3 by scaling with f1 and f4
-        double k = 0.25; // Scaling factor to ensure f2 < f1, f3 < f4
-        double f2 = k * f1;
-        double f3 = k * f4;
+        // f1 is proportional to progress and f4 to the inverse of progress.
+        double f1 = A * progress;
+        double f4 = A * (1 - progress);
 
-        // Step 4: Return the weights
-        return new double[] {f1, f2, f3, f4};
+        // f2 and f3 are set as a fraction K of f1 and f4 respectively.
+        double f2 = K * f1;
+        double f3 = K * f4;
+
+        return new double[]{f1, f2, f3, f4};
     }
 
     public double calculateControl(int[][] board, ArrayList<int[][]> reaches) {
