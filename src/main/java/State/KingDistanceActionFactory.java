@@ -7,7 +7,7 @@ public class KingDistanceActionFactory implements ActionFactory {
     private static final int[] DR = {-1, 1, 0, 0, -1, -1, 1, 1};
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
 
-    @Override
+
     public Action getAction(State state, boolean black, int movesPlayed) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
@@ -105,5 +105,10 @@ public class KingDistanceActionFactory implements ActionFactory {
                 for (int c = 0; c < board[0].length; c++)
                     reach[r][c] = Math.min(reach[r][c], distances[r][c]);
         }
+    }
+
+    @Override
+    public Action[] getAction(State state, boolean black, int movesPlayed, int topN) {
+        return new Action[0];
     }
 }

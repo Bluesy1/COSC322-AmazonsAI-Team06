@@ -11,7 +11,7 @@ public class TerritoryActionFactory implements ActionFactory {
     private static final double C = 6.0;         // Controls speed of game progress ramp-up
     private static final double K = 0.35;         // Fraction for f2 relative to f1 (and f3 to f4)
 
-    @Override
+
     public Action getAction(State state, boolean black, int movesPlayed) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
@@ -91,5 +91,10 @@ public class TerritoryActionFactory implements ActionFactory {
         }
 
         return totalControl;
+    }
+
+    @Override
+    public Action[] getAction(State state, boolean black, int movesPlayed, int topN) {
+        return new Action[0];
     }
 }

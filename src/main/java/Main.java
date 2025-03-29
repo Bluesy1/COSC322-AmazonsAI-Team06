@@ -32,11 +32,11 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		Main player = new Main("Team-06", "", new TerritoryActionFactory());
+		Main player = new Main("Team-06", "", new MinDistanceActionFactory());
 
 		switch (args.length > 0 ? args[0] : "") {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-reference", "", new MinDistanceActionFactory());
+				Main player2 = new Main("Team-06-reference", "", new RandomAction());
 				player2.Go();
 			}
 			case "human" -> {
@@ -101,12 +101,12 @@ public class Main extends GamePlayer{
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a move
-					MCTS mcts = new MCTS(gameState, true, );
-					Action move = actionFactory.getAction(gameState, true, moveCounter, topN);
+					//MCTS mcts = new MCTS(gameState, true, moveCounter, topN);
+					Action[] move = actionFactory.getAction(gameState, true, moveCounter, topN);
 					moveCounter++;
-					assert move != null;
-					System.out.printf("Chosen move: %s%n", move);
-					sendMove(move);
+					assert move[0] != null;
+					System.out.printf("Chosen move: %s%n", move[0]);
+					sendMove(move[0]);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
@@ -121,14 +121,14 @@ public class Main extends GamePlayer{
 				}
 				gameState = new State(gameState, action);
 				// Make a move
-				Action move = actionFactory.getAction(gameState, isBlack, moveCounter);
+				Action[] move = actionFactory.getAction(gameState, isBlack, moveCounter, topN);
 				moveCounter++;
-				if (move == null) {
+				if (move[0] == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
-					System.out.printf("Chosen move: %s%n", move);
+					System.out.printf("Chosen move: %s%n", move[0]);
 					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED, isBlack ? "Black": "White", ANSI_RESET);
-					sendMove(move);
+					sendMove(move[0]);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
 						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
 					}
