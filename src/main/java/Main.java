@@ -26,6 +26,8 @@ public class Main extends GamePlayer{
 	private int moveCounter = 0;
 	private int topN = 5;
 	private MCTS mcts;
+	private final int iterations = 10000;
+	private boolean useMCTS = false;
 
 
     /**
@@ -33,11 +35,11 @@ public class Main extends GamePlayer{
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		Main player = new Main("Team-06", "", new MinDistanceActionFactory());
+		Main player = new Main("Team-06", "", new MinDistanceActionFactory(), true);
 
 		switch (args.length > 0 ? args[0] : "") {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-reference", "", new RandomAction());
+				Main player2 = new Main("Team-06-reference", "", new RandomAction(), false);
 				player2.Go();
 			}
 			case "human" -> {
@@ -62,10 +64,11 @@ public class Main extends GamePlayer{
      * @param userName any string (used as display username in gui)
       * @param passwd any string (can be empty)
      */
-    public Main(String userName, String passwd, ActionFactory actionFactory) {
+    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMCTS) {
     	this.userName = userName;
     	this.passwd = passwd;
 		this.actionFactory = actionFactory;
+		this.useMCTS = useMCTS;
     	
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
@@ -102,11 +105,19 @@ public class Main extends GamePlayer{
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a move
-					Action[] move = actionFactory.getAction(gameState, true, moveCounter, topN);
+					Action move = null;
+					if (useMCTS){
+						mcts = new MCTS(gameState, isBlack, moveCounter, topN);
+						move = mcts.findBestMove(iterations);
+					}
+					else {
+						Action[] moves = actionFactory.getAction(gameState, isBlack, moveCounter, topN);
+						move = moves[0];
+					}
 					moveCounter++;
-					assert move[0] != null;
-					System.out.printf("Chosen move: %s%n", move[0]);
-					sendMove(move[0]);
+					assert move != null;
+					System.out.printf("Chosen move: %s%n", move);
+					sendMove(move);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
@@ -121,14 +132,22 @@ public class Main extends GamePlayer{
 				}
 				gameState = new State(gameState, action);
 				// Make a move
-				Action[] move = actionFactory.getAction(gameState, isBlack, moveCounter, topN);
+				Action move;
+				if (useMCTS){
+					mcts = new MCTS(gameState, isBlack, moveCounter, topN);
+					move = mcts.findBestMove(iterations);
+				}
+				else {
+					Action[] moves = actionFactory.getAction(gameState, isBlack, moveCounter, topN);
+					move = moves[0];
+				}
 				moveCounter++;
-				if (move[0] == null) {
+				if (move == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
-					System.out.printf("Chosen move: %s%n", move[0]);
+					System.out.printf("Chosen move: %s%n", move);
 					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED, isBlack ? "Black": "White", ANSI_RESET);
-					sendMove(move[0]);
+					sendMove(move);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
 						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
 					}
