@@ -27,7 +27,7 @@ public class Main extends GamePlayer{
 	private int topN = 5;
 	private MCTS mcts;
 	private final int iterations = 10000;
-	private boolean useMCTS = false;
+	private final boolean useMCTS;
 
 
     /**
@@ -64,7 +64,7 @@ public class Main extends GamePlayer{
      * @param userName any string (used as display username in gui)
       * @param passwd any string (can be empty)
      */
-    public Main(String userName, String passwd, ActionFactory actionFactory) {
+    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMCTS) {
     	this.userName = userName +
                 "-" +
                 (new Random()).nextInt(1000);
@@ -107,10 +107,14 @@ public class Main extends GamePlayer{
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a move
-					Action move = null;
+					Action move;
 					if (useMCTS){
+						System.out.println("Making a move using MCTS");
 						mcts = new MCTS(gameState, isBlack, moveCounter, topN);
 						move = mcts.findBestMove(iterations);
+						if (move == null) {
+							move = actionFactory.getAction(gameState, isBlack, moveCounter, 1)[0];
+						}
 					}
 					else {
 						Action[] moves = actionFactory.getAction(gameState, isBlack, moveCounter, topN);
