@@ -7,8 +7,13 @@ public class MinDistanceActionFactory implements ActionFactory {
     private static final int[] DR = {-1, 1, 0, 0, -1, -1, 1, 1};
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
 
+    private Queue<Action> bfsAction;
+    private int currentControl;
+    private int tempControl;
+    private Action[] bfsActionArray;
+
     @Override
-    public Action getAction(State state, boolean black, int movesPlayed) {
+    public Action[] getAction(State state, boolean black, int movesPlayed, int topN) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
 
@@ -17,10 +22,9 @@ public class MinDistanceActionFactory implements ActionFactory {
             return null;
         }
 
+        currentControl = Integer.MIN_VALUE;
+        bfsAction = new LinkedList<>();
 
-
-        int currentControl = Integer.MIN_VALUE;
-        Action bfsAction = null;
         for (Action action : moves) {
             if (!Utils.validateMove(state, action, color, false)) {continue;}
             State actionOutcome = new State(state, action);
@@ -39,14 +43,25 @@ public class MinDistanceActionFactory implements ActionFactory {
                 }
             }
 
-            int tempControl = playerControl - opponentControl;
+            tempControl = playerControl - opponentControl;
             if (tempControl > currentControl) {
-                bfsAction = action;
                 currentControl = tempControl;
+                if (bfsAction.size() <= topN) {
+                    bfsAction.offer(action);
+                } else {
+                    bfsAction.poll();
+                    bfsAction.offer(action);
+                }
             }
+
         }
 
-        return bfsAction;
+        bfsActionArray = new Action[topN];
+        for (int i = topN-1; i >= 0; i--) {
+            bfsActionArray[i] = bfsAction.poll();
+        }
+
+        return bfsActionArray;
     }
 
     public static int[][] bfsMinDistance(int[][] board, int startRow, int startCol) {

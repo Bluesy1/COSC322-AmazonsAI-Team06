@@ -24,6 +24,7 @@ public class Main extends GamePlayer{
 	private boolean isBlack;
 	private final ActionFactory actionFactory;
 	private int moveCounter = 0;
+	private int topN = 5;
 
 
     /**
@@ -100,7 +101,8 @@ public class Main extends GamePlayer{
 				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
 				if (isBlack) {
 					// Make a move
-					Action move = actionFactory.getAction(gameState, true, moveCounter);
+					MCTS mcts = new MCTS(gameState, true, );
+					Action move = actionFactory.getAction(gameState, true, moveCounter, topN);
 					moveCounter++;
 					assert move != null;
 					System.out.printf("Chosen move: %s%n", move);

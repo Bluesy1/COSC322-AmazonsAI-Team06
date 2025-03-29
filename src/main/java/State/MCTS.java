@@ -8,14 +8,19 @@ public class MCTS {
     private final int NUM_THREADS = Runtime.getRuntime().availableProcessors();
     private final double EXPLORATION_CONSTANT = Math.sqrt(2);
     private final int SIMULATION_DEPTH = 12;
-    private final int TOP_ACTIONS = 5;
 
     private final MinDistanceActionFactory actionFactory;
     private Node root;
+    private boolean isBlack;
+    private int topActions;
+    private int moveCounter;
 
-    public MCTS(State initialState) {
+    public MCTS(State initialState, boolean isBlack, int topActions, int moveCounter) {
         this.actionFactory = new MinDistanceActionFactory();
-        this.root = new Node(initialState, null);
+        this.root = new Node(initialState, null, isBlack);
+        this.isBlack = isBlack;
+        this.topActions = topActions;
+        this.moveCounter = moveCounter;
     }
 
     public Action findBestMove(int iterations) {
@@ -43,7 +48,7 @@ public class MCTS {
     private void search(Node node) {
         Node selected = select(node);
         Node expanded = expand(selected);
-        double result = simulate(expanded.state);
+        double result = simulate(expanded.state, isBlack);
         backpropagate(expanded, result);
     }
 
@@ -59,7 +64,7 @@ public class MCTS {
     }
 
     private Node expand(Node node) {
-        Action[] actions = actionFactory.getAction(node.state, node.isBlackTurn());
+        Action[] actions = actionFactory.getAction(node.state, isBlack);
         for (Action action : actions) {
             if (!node.hasChild(action)) {
                 State newState = new State(node.state, action);
@@ -71,11 +76,12 @@ public class MCTS {
         return node;
     }
 
-    private double simulate(State state) {
+    private double simulate(State state, boolean isBlack) {
         State simState = state;
         int depth = 0;
         while (!isTerminal(simState) && depth < SIMULATION_DEPTH) {
-            Action[] actions = actionFactory.getAction(simState, simState.isBlackTurn());
+            Action[] actions = new Action[topActions];
+            actions = actionFactory.getAction(simState, isBlack, moveCounter, topActions);
             if (actions.length == 0) break;
             Action action = actions[ThreadLocalRandom.current().nextInt(actions.length)];
             simState = new State(simState, action);
@@ -107,14 +113,16 @@ public class MCTS {
         public final State state;
         public final Action action;
         public final Node parent;
+        public boolean isBlack;
         public final List<Node> children = new CopyOnWriteArrayList<>();
         public final AtomicInteger visits = new AtomicInteger(0);
         public final AtomicDouble totalScore = new AtomicDouble(0);
 
-        public Node(State state, Action action) {
+        public Node(State state, Action action, boolean isBlack) {
             this.state = state;
             this.action = action;
             this.parent = this;
+            this.isBlack = isBlack;
         }
 
         public boolean isLeaf() {
@@ -122,7 +130,7 @@ public class MCTS {
         }
 
         public boolean isFullyExpanded() {
-            return children.size() >= actionFactory.getAction(state, state.isBlackTurn()).length;
+            return children.size() >= actionFactory.getAction(state, isBlack).length;
         }
 
         public Node selectChild(double explorationWeight) {
