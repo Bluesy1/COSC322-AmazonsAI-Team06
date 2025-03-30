@@ -11,247 +11,250 @@ import java.io.*;
 import java.util.*;
 
 
-public class Main extends GamePlayer{
+public class Main extends GamePlayer {
 
-	public static final String ANSI_RESET = "\u001B[0m";
-	public static final String ANSI_RED = "\u001B[31m";
-	public static final String ANSI_GREEN = "\u001B[32m";
+    public static final String ANSI_RESET = "\u001B[0m";
+    public static final String ANSI_RED = "\u001B[31m";
+    public static final String ANSI_GREEN = "\u001B[32m";
 
     private GameClient gameClient = null;
     private final BaseGameGUI gameGui;
-	private State gameState = null;
+    private State gameState = null;
 
     private String userName;
     private final String passwd;
-	private boolean isBlack;
-	private String colorName;
-	private final ActionFactory actionFactory;
-	private int moveCounter = 0;
-	private final boolean useMinimax;
-	private final int topN = 2;
-	private final int DEPTH = 8;
-	private FileWriter logFile = null;
+    private boolean isBlack;
+    private String colorName;
+    private final ActionFactory actionFactory;
+    private int moveCounter = 0;
+    private final boolean useMinimax;
+    private FileWriter logFile = null;
 
 
     /**
      * The main method
+     *
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-		Main player = new Main("Team-06", "", new MinDistanceActionFactory(), true);
+        Main player = new Main("Team-06", "", new MinDistanceActionFactory(), true);
 
-		switch (args.length > 0 ? args[0] : "") {
-			case "2"  -> {
-				Main player2 = new Main("Team-06-reference", "", new MinDistanceActionFactory(), false);
-				player2.Go();
-			}
-			case "human" -> {
-				HumanPlayer human = new HumanPlayer();
-				human.Go();
-			}
-			default -> {}
-		}
+        switch (args.length > 0 ? args[0] : "") {
+            case "2" -> {
+                Main player2 = new Main("Team-06-reference", "", new MinDistanceActionFactory(), false);
+                player2.Go();
+            }
+            case "human" -> {
+                HumanPlayer human = new HumanPlayer();
+                human.Go();
+            }
+            default -> {
+            }
+        }
 
 
-    	if(player.getGameGUI() == null) {
-    		player.Go();
-    	}
-    	else {
-    		BaseGameGUI.sys_setup();
+        if (player.getGameGUI() == null) {
+            player.Go();
+        } else {
+            BaseGameGUI.sys_setup();
             java.awt.EventQueue.invokeLater(player::Go);
-    	}
+        }
     }
 
     /**
      * Any name and passwd
+     *
      * @param userName any string (used as display username in gui)
-      * @param passwd any string (can be empty)
+     * @param passwd   any string (can be empty)
      */
     public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMinimax) {
-    	this.userName = userName +
+        this.userName = userName +
                 "-" +
                 (new Random()).nextInt(1000);
-    	this.passwd = passwd;
-		this.actionFactory = actionFactory;
-		this.useMinimax = useMinimax;
-    	//To make a GUI-based player, create an instance of BaseGameGUI
-    	//and implement the method getGameGUI() accordingly
-    	this.gameGui = new BaseGameGUI(this);
+        this.passwd = passwd;
+        this.actionFactory = actionFactory;
+        this.useMinimax = useMinimax;
+        //To make a GUI-based player, create an instance of BaseGameGUI
+        //and implement the method getGameGUI() accordingly
+        this.gameGui = new BaseGameGUI(this);
     }
- 
 
 
     @Override
     public void onLogin() {
-		userName = gameClient.getUserName();
-		if(gameGui != null) {
-			gameGui.setRoomInformation(gameClient.getRoomList());
-		}
+        userName = gameClient.getUserName();
+        if (gameGui != null) {
+            gameGui.setRoomInformation(gameClient.getRoomList());
+        }
     }
 
     @Override
     public boolean handleGameMessage(String messageType, Map<String, Object> msgDetails) {
-    	//This method will be called by the GameClient when it receives a game-related message
-    	//from the server.
-	
-    	//For a detailed description of the message types and format, 
-    	//see the method GamePlayer.handleGameMessage() in the game-client-api document. 
+        //This method will be called by the GameClient when it receives a game-related message
+        //from the server.
 
-		switch (messageType) {
-			case GameMessage.GAME_STATE_BOARD -> {
-				// noinspection unchecked
-				ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
-				getGameGUI().setGameState(board);
-				gameState = new State(board);
-			}
-			case GameMessage.GAME_ACTION_START -> {
-				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
-				colorName = isBlack ? "Black" : "White";
-				if (logFile != null) {
+        //For a detailed description of the message types and format,
+        //see the method GamePlayer.handleGameMessage() in the game-client-api document.
+
+        switch (messageType) {
+            case GameMessage.GAME_STATE_BOARD -> {
+                // noinspection unchecked
+                ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
+                getGameGUI().setGameState(board);
+                gameState = new State(board);
+            }
+            case GameMessage.GAME_ACTION_START -> {
+                isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
+                colorName = isBlack ? "Black" : "White";
+                if (logFile != null) {
                     try {
-						logFile.flush();
+                        logFile.flush();
                         logFile.close();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 }
-				Date date = new Date();
-				SimpleDateFormat sdf = new SimpleDateFormat("hh-mm-ss");
-				String fileName = userName + "_" + colorName + "_" + sdf.format(date) + ".log";
-				File file = new File(fileName);
-				int counter = 0;
-				while (file.exists()) {file = new File(fileName + "." + ++counter);}
-				try {
-					// noinspection ResultOfMethodCallIgnored
-					file.createNewFile();
-					logFile = new FileWriter(file);
-				} catch (IOException ignored) {logFile = null;}
-				logMessage(String.format("We are playing as %s.", colorName));
-				if (isBlack) {
-					// Make a move
-					Action move = null;
-					ActionControlPair[] moves = actionFactory.getAction(gameState, true, topN);
-					if (useMinimax) {
-						move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
-					} else {
-						if (moves != null) {
-							move = moves[0].getAction();
-						}
-					}
-					moveCounter++;
-					assert move != null;
-					logMessage(String.format("Chosen move: %s", move));
-					sendMove(move);
-				}
-			}
-			case GameMessage.GAME_ACTION_MOVE -> {
-				updateGameState(msgDetails);
-				Action action = new Action(msgDetails);
-				logMessage(String.format("We are playing as %s.", colorName));
-				logMessage(String.format("Received opponent move: %s", action));
-				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK, true);
-				moveCounter++;
-				if (!valid) {
-					logMessage("%sReceived an invalid Move!!!!!%s", ANSI_RED);
-				}
-				gameState = new State(gameState, action);
-				// Make a move
-				ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
-				Action move = null;
-				if (useMinimax) {
-					if (moves != null) {
-						move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
-					}
-				} else {
-					if (moves != null) {
-						move = moves[0].getAction();
-					}
-				}
-				moveCounter++;
-				if (moves == null) {
-					logMessage("%sNo moves available!! We lost.%s☹️%", ANSI_RED);
-					if (logFile != null) {
-						try {logFile.close();} catch (IOException ignored) {}
-						logFile = null;
-					}
-				} else {
-					logMessage(String.format("Chosen move: %s", move));
-					logMessage(String.format("Moving a %s Queen.", colorName), ANSI_RED);
-					sendMove(move);
-					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
-						logMessage("No moves available for opponent!! We won!\uD83C\uDF89", ANSI_GREEN);
-						if (logFile != null) {
-                            try {logFile.close();} catch (IOException ignored) {}
-							logFile = null;
+                Date date = new Date();
+                SimpleDateFormat sdf = new SimpleDateFormat("hh-mm-ss");
+                String fileName = userName + "_" + colorName + "_" + sdf.format(date) + ".log";
+                File file = new File(fileName);
+                int counter = 0;
+                while (file.exists()) {
+                    file = new File(fileName + "." + ++counter);
+                }
+                try {
+                    // noinspection ResultOfMethodCallIgnored
+                    file.createNewFile();
+                    logFile = new FileWriter(file);
+                } catch (IOException ignored) {
+                    logFile = null;
+                }
+                logMessage(String.format("We are playing as %s.", colorName));
+                if (isBlack) {
+                    makeGameMove();
+                }
+            }
+            case GameMessage.GAME_ACTION_MOVE -> {
+                updateGameState(msgDetails);
+                Action action = new Action(msgDetails);
+                logMessage(String.format("We are playing as %s.", colorName));
+                logMessage(String.format("Received opponent move: %s", action));
+                boolean valid = Utils.validateMove(gameState, action, isBlack ? State.WHITE : State.BLACK, true);
+                moveCounter++;
+                if (!valid) {
+                    logMessage("%sReceived an invalid Move!!!!!%s", ANSI_RED);
+                }
+                gameState = new State(gameState, action);
+                if (makeGameMove()) {
+                    if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
+                        logMessage("No moves available for opponent!! We won!\uD83C\uDF89", ANSI_GREEN);
+                        if (logFile != null) {
+                            try {
+                                logFile.close();
+                            } catch (IOException ignored) {
+                            }
+                            logFile = null;
                         }
-					}
-				}
-			}
-			default -> System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
-		}
-		logMessage(gameState.boardToString());
-    	return true;   	
+                    }
+                }
+            }
+            default -> System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
+        }
+        logMessage(gameState.boardToString());
+        return true;
     }
 
-	private void logMessage(String msg) {
-		if (logFile != null) {
-			try {
-				logFile.write(msg);
-				logFile.write('\n');
-				logFile.flush();
-			} catch (IOException ignored) {
-			}
-		}
-		System.out.printf("%s%n", msg);
-	}
+    private boolean makeGameMove() {
+        int topN = 2;
+        int DEPTH = 8;
+        Action move = null;
+        long startTime = System.currentTimeMillis();
+        ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
+        if (useMinimax) {
+            move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
+        } else {
+            if (moves != null) {
+                move = moves[0].getAction();
+            }
+        }
+        if (move != null) {
+            moveCounter++;
+            sendMove(move);
+            long endTime = System.currentTimeMillis();
+            logMessage(String.format("Chosen move: %s (Time Taken: %.3f s)", move, endTime - startTime / 1000D));
+            return true;
+        } else {
+            logMessage("No moves available!! We lost.☹️", ANSI_RED);
+            if (logFile != null) {
+                try {
+                    logFile.close();
+                } catch (IOException ignored) {
+                }
+                logFile = null;
+            }
+            return false;
+        }
+    }
 
-	private void logMessage(String msg, String formatChar) {
-		if (logFile != null) {
+    private void logMessage(String msg) {
+        if (logFile != null) {
             try {
                 logFile.write(msg);
-				logFile.write('\n');
-				logFile.flush();
+                logFile.write('\n');
+                logFile.flush();
             } catch (IOException ignored) {
             }
         }
-		System.out.printf("%s%s%s%n", formatChar, msg, ANSI_RESET);
-	}
+        System.out.printf("%s%n", msg);
+    }
 
-	private void sendMove(Action move) {
-		Map<String, Object> payload = move.toServerResponse();
-		getGameClient().sendMoveMessage(payload);
-		updateGameState(payload);
-		gameState = new State(gameState, move);
-	}
+    private void logMessage(String msg, String formatChar) {
+        if (logFile != null) {
+            try {
+                logFile.write(msg);
+                logFile.write('\n');
+                logFile.flush();
+            } catch (IOException ignored) {
+            }
+        }
+        System.out.printf("%s%s%s%n", formatChar, msg, ANSI_RESET);
+    }
 
-	@SuppressWarnings("unchecked")
-	private void updateGameState(Map<String, Object> move) {
-		getGameGUI().updateGameState(
-				(ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_CURR),
-				(ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_NEXT),
-				(ArrayList<Integer>) move.get(AmazonsGameMessage.ARROW_POS)
-		);
-	}
+    private void sendMove(Action move) {
+        Map<String, Object> payload = move.toServerResponse();
+        getGameClient().sendMoveMessage(payload);
+        updateGameState(payload);
+        gameState = new State(gameState, move);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void updateGameState(Map<String, Object> move) {
+        getGameGUI().updateGameState(
+                (ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_CURR),
+                (ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_NEXT),
+                (ArrayList<Integer>) move.get(AmazonsGameMessage.ARROW_POS)
+        );
+    }
 
     @Override
     public String userName() {
-    	return userName;
+        return userName;
     }
 
-	@Override
-	public GameClient getGameClient() {
-		return this.gameClient;
-	}
+    @Override
+    public GameClient getGameClient() {
+        return this.gameClient;
+    }
 
-	@Override
-	public BaseGameGUI getGameGUI() {
-		return  this.gameGui;
-	}
+    @Override
+    public BaseGameGUI getGameGUI() {
+        return this.gameGui;
+    }
 
-	@Override
-	public void connect() {
-    	gameClient = new GameClient(userName, passwd, this);			
-	}
+    @Override
+    public void connect() {
+        gameClient = new GameClient(userName, passwd, this);
+    }
 
- 
+
 }//end of class

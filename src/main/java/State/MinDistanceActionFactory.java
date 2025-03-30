@@ -16,7 +16,9 @@ public class MinDistanceActionFactory implements ActionFactory {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
 
-        if (moves.size() < topN) {topN = moves.size();}
+        if (moves.size() < topN) {
+            topN = moves.size();
+        }
 
         if (moves.isEmpty()) {
             return null;
@@ -39,12 +41,15 @@ public class MinDistanceActionFactory implements ActionFactory {
             int playerControl = 0, opponentControl = 0;
             for (int r = 0; r < board.length; r++) {
                 for (int c = 0; c < board[0].length; c++) {
-                    if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) playerControl++;
-                    else opponentControl++;
+                    if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) {
+                        playerControl++;
+                    } else {
+                        opponentControl++;
+                    }
                 }
             }
 
-            actions.add(new ActionControlPair(action, playerControl-opponentControl));
+            actions.add(new ActionControlPair(action, playerControl - opponentControl));
         }
 
         Collections.sort(actions);
@@ -103,7 +108,7 @@ public class MinDistanceActionFactory implements ActionFactory {
         return reaches;
     }
 
-    public static void reachCalculate (int[][] reach, int[][] board, Pair[] amazons ) {
+    public static void reachCalculate(int[][] reach, int[][] board, Pair[] amazons) {
         for (Pair amazon : amazons) {
             int[][] distances = bfsMinDistance(board, amazon.col, amazon.row);
             for (int r = 0; r < board.length; r++)
