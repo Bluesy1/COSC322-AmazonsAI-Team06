@@ -6,8 +6,7 @@ public class AlphaBetaMinimax {
 
     public static Action getBestMove(ActionControlPair[] actions, int depth, boolean isBlack, int topN, ActionFactory actionFactory, State state) {
         for (int i = 0; i < actions.length; i++) {
-            State simState = new State(state, actions[i].getAction());
-            actions[i].setControl(evaluateMove(actionFactory, depth, topN, true, actions[i].getControl(), simState, isBlack));
+            actions[i].setControl(evaluateMove(actionFactory, depth, topN, true, actions[i].getControl(), state, isBlack));
         }
 
         int mostControl = Integer.MIN_VALUE;

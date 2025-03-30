@@ -136,7 +136,11 @@ public class Main extends GamePlayer{
 				ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
 				Action move = null;
 				if (useMinimax) {
-					move = AlphaBetaMinimax.getBestMove(moves, 3, isBlack, topN, actionFactory, gameState);
+					if (moves == null) {
+						move = null;
+					} else {
+						move = AlphaBetaMinimax.getBestMove(moves, 3, isBlack, topN, actionFactory, gameState);
+					}
 				} else {
 					if (moves == null) {
 						move = null;
@@ -145,7 +149,7 @@ public class Main extends GamePlayer{
 					}
 				}
 				moveCounter++;
-				if (move == null) {
+				if (moves == null) {
 					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
 				} else {
 					System.out.printf("Chosen move: %s%n", move);
