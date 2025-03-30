@@ -24,8 +24,9 @@ public class Main extends GamePlayer{
 	private boolean isBlack;
 	private final ActionFactory actionFactory;
 	private int moveCounter = 0;
-	private int topN = 5;
+	private int topN = 2;
 	private boolean useMinimax;
+	private final int DEPTH = 8;
 
 
     /**
@@ -107,7 +108,7 @@ public class Main extends GamePlayer{
 					Action move = null;
 					ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
 					if (useMinimax) {
-						move = AlphaBetaMinimax.getBestMove(moves, 3, isBlack, topN, actionFactory, gameState);
+						move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
 					} else {
 						if (moves == null) {
 							move = null;
@@ -139,7 +140,7 @@ public class Main extends GamePlayer{
 					if (moves == null) {
 						move = null;
 					} else {
-						move = AlphaBetaMinimax.getBestMove(moves, 3, isBlack, topN, actionFactory, gameState);
+						move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
 					}
 				} else {
 					if (moves == null) {
