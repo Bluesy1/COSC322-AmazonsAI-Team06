@@ -1,3 +1,4 @@
+/*
 package State;
 
 import java.util.*;
@@ -112,3 +113,4 @@ public class KingDistanceActionFactory implements ActionFactory {
         return new Action[0];
     }
 }
+*/

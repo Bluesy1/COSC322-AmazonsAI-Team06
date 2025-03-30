@@ -25,9 +25,7 @@ public class Main extends GamePlayer{
 	private final ActionFactory actionFactory;
 	private int moveCounter = 0;
 	private int topN = 5;
-	private MCTS mcts;
-	private final int iterations = 10000;
-	private boolean useMCTS = false;
+	private boolean useMinimax;
 
 
     /**
@@ -39,7 +37,7 @@ public class Main extends GamePlayer{
 
 		switch (args.length > 0 ? args[0] : "") {
 			case "2"  -> {
-				Main player2 = new Main("Team-06-reference", "", new RandomAction(), false);
+				Main player2 = new Main("Team-06-reference", "", new MinDistanceActionFactory(), false);
 				player2.Go();
 			}
 			case "human" -> {
@@ -64,14 +62,13 @@ public class Main extends GamePlayer{
      * @param userName any string (used as display username in gui)
       * @param passwd any string (can be empty)
      */
-    public Main(String userName, String passwd, ActionFactory actionFactory) {
+    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMinimax) {
     	this.userName = userName +
                 "-" +
                 (new Random()).nextInt(1000);
     	this.passwd = passwd;
 		this.actionFactory = actionFactory;
-		this.useMCTS = useMCTS;
-
+		this.useMinimax = useMinimax;
     	//To make a GUI-based player, create an instance of BaseGameGUI
     	//and implement the method getGameGUI() accordingly
     	this.gameGui = new BaseGameGUI(this);
@@ -108,13 +105,15 @@ public class Main extends GamePlayer{
 				if (isBlack) {
 					// Make a move
 					Action move = null;
-					if (useMCTS){
-						mcts = new MCTS(gameState, isBlack, moveCounter, topN);
-						move = mcts.findBestMove(iterations);
-					}
-					else {
-						Action[] moves = actionFactory.getAction(gameState, isBlack, moveCounter, topN);
-						move = moves[0];
+					ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
+					if (useMinimax) {
+						move = AlphaBetaMinimax.getBestMove(moves, 3, isBlack, topN, actionFactory, gameState);
+					} else {
+						if (moves == null) {
+							move = null;
+						} else {
+							move = moves[0].getAction();
+						}
 					}
 					moveCounter++;
 					assert move != null;
@@ -134,14 +133,16 @@ public class Main extends GamePlayer{
 				}
 				gameState = new State(gameState, action);
 				// Make a move
-				Action move;
-				if (useMCTS){
-					mcts = new MCTS(gameState, isBlack, moveCounter, topN);
-					move = mcts.findBestMove(iterations);
-				}
-				else {
-					Action[] moves = actionFactory.getAction(gameState, isBlack, moveCounter, topN);
-					move = moves[0];
+				ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
+				Action move = null;
+				if (useMinimax) {
+					move = AlphaBetaMinimax.getBestMove(moves, 3, isBlack, topN, actionFactory, gameState);
+				} else {
+					if (moves == null) {
+						move = null;
+					} else {
+						move = moves[0].getAction();
+					}
 				}
 				moveCounter++;
 				if (move == null) {

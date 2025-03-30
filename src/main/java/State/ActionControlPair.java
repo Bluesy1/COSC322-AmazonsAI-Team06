@@ -18,4 +18,8 @@ public class ActionControlPair implements Comparable<ActionControlPair> {
 
     public int getControl() {return Control;}
 
+    public void setControl(int Control) {this.Control = Control;}
+
+    public void setAction(Action action) {this.action = action;}
+
 }

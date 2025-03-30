@@ -8,24 +8,25 @@ public class MinDistanceActionFactory implements ActionFactory {
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
 
     private int currentControl;
-    private Action[] bfsActionArray;
+    private ActionControlPair[] bfsActionArray;
     private ArrayList<ActionControlPair> actions;
 
     @Override
-    public Action[] getAction(State state, boolean black, int movesPlayed, int topN) {
+    public ActionControlPair[] getAction(State state, boolean black, int topN) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
 
         if (moves.size() < topN) {topN = moves.size();}
 
-        Collections.shuffle(moves);
         if (moves.isEmpty()) {
             return null;
         }
 
         currentControl = Integer.MIN_VALUE;
         actions = new ArrayList<ActionControlPair>(moves.size());
-        bfsActionArray = new Action[topN];
+        bfsActionArray = new ActionControlPair[topN];
+
+        Collections.shuffle(moves);
 
         for (Action action : moves) {
             State actionOutcome = new State(state, action);
@@ -50,7 +51,7 @@ public class MinDistanceActionFactory implements ActionFactory {
         Collections.sort(actions);
 
         for (int i = 0; i < topN; i++) {
-            bfsActionArray[i] = actions.get(i).getAction();
+            bfsActionArray[i] = actions.get(i);
         }
 
 
