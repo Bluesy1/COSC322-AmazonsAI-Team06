@@ -6,7 +6,7 @@ public class AlphaBetaMinimax {
 
     public static Action getBestMove(ActionControlPair[] actions, int depth, boolean isBlack, int topN, ActionFactory actionFactory, State state) {
         for (int i = 0; i < actions.length; i++) {
-            actions[i].setControl(evaluateMove(actionFactory, depth, topN, true, actions[i].getControl(), state, isBlack));
+            actions[i].setControl(evaluateMove(actionFactory, depth, topN, true, actions[i].getControl(), state, isBlack, Integer.MIN_VALUE, Integer.MAX_VALUE));
         }
 
         int mostControl = Integer.MIN_VALUE;
@@ -21,7 +21,7 @@ public class AlphaBetaMinimax {
         return actions[index].getAction();
     }
 
-    private static int evaluateMove (ActionFactory actionFactory, int depth, int topN, boolean maximizingPlayer, int currentEval, State currentState, boolean maximizerIsBlack) {
+    private static int evaluateMove (ActionFactory actionFactory, int depth, int topN, boolean maximizingPlayer, int currentEval, State currentState, boolean maximizerIsBlack, int alpha, int beta) {
         if (depth == 0) {
             return currentEval;
         }
@@ -34,7 +34,9 @@ public class AlphaBetaMinimax {
 
             for (ActionControlPair child : childPaths) {
                 State childState = new State(currentState, child.getAction());
-                eval[index] = evaluateMove(actionFactory, depth-1, topN, false, child.getControl(), childState, maximizerIsBlack);
+                eval[index] = evaluateMove(actionFactory, depth-1, topN, false, child.getControl(), childState, maximizerIsBlack, alpha, beta);
+                alpha = Math.max(alpha, eval[index]);
+                if (beta <= alpha) {break;}
                 index++;
             }
             return Arrays.stream(eval).max().getAsInt();
@@ -48,7 +50,9 @@ public class AlphaBetaMinimax {
 
             for (ActionControlPair child : childPaths) {
                 State childState = new State(currentState, child.getAction());
-                eval[index] = evaluateMove(actionFactory, depth-1, topN, true, child.getControl(), childState, maximizerIsBlack);
+                eval[index] = evaluateMove(actionFactory, depth-1, topN, true, child.getControl(), childState, maximizerIsBlack, alpha, beta);
+                beta = Math.min(beta, eval[index]);
+                if (beta <= alpha) {break;}
                 index++;
             }
             return Arrays.stream(eval).min().getAsInt();
