@@ -34,8 +34,7 @@ public class MinDistanceActionFactory implements ActionFactory {
             Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
             int[][] board = actionOutcome.getBoard();
 
-            ArrayList<int[][]> reaches = new ArrayList<>();
-            reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
+            ArrayList<int[][]> reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
 
             int playerControl = 0, opponentControl = 0;
             for (int r = 0; r < board.length; r++) {
@@ -105,8 +104,8 @@ public class MinDistanceActionFactory implements ActionFactory {
     }
 
     public static void reachCalculate (int[][] reach, int[][] board, Pair[] amazons ) {
-        for (int i = 0; i < amazons.length; i++) {
-            int[][] distances = bfsMinDistance(board, amazons[i].col, amazons[i].row);
+        for (Pair amazon : amazons) {
+            int[][] distances = bfsMinDistance(board, amazon.col, amazon.row);
             for (int r = 0; r < board.length; r++)
                 for (int c = 0; c < board[0].length; c++)
                     reach[r][c] = Math.min(reach[r][c], distances[r][c]);

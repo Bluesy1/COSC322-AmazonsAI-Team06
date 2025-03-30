@@ -6,6 +6,8 @@ import ygraph.ai.smartfox.games.GamePlayer;
 import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
 import ygraph.ai.smartfox.games.amazons.HumanPlayer;
 
+import java.text.SimpleDateFormat;
+import java.io.*;
 import java.util.*;
 
 
@@ -22,11 +24,13 @@ public class Main extends GamePlayer{
     private String userName;
     private final String passwd;
 	private boolean isBlack;
+	private String colorName;
 	private final ActionFactory actionFactory;
 	private int moveCounter = 0;
-	private int topN = 2;
-	private boolean useMinimax;
+	private final boolean useMinimax;
+	private final int topN = 2;
 	private final int DEPTH = 8;
+	private FileWriter logFile = null;
 
 
     /**
@@ -102,70 +106,116 @@ public class Main extends GamePlayer{
 			}
 			case GameMessage.GAME_ACTION_START -> {
 				isBlack = msgDetails.get(AmazonsGameMessage.PLAYER_BLACK).equals(getGameClient().getUserName());
-				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
+				colorName = isBlack ? "Black" : "White";
+				if (logFile != null) {
+                    try {
+						logFile.flush();
+                        logFile.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+				Date date = new Date();
+				SimpleDateFormat sdf = new SimpleDateFormat("hh-mm-ss");
+				String fileName = userName + "_" + colorName + "_" + sdf.format(date) + ".log";
+				File file = new File(fileName);
+				int counter = 0;
+				while (file.exists()) {file = new File(fileName + "." + ++counter);}
+				try {
+					// noinspection ResultOfMethodCallIgnored
+					file.createNewFile();
+					logFile = new FileWriter(file);
+				} catch (IOException ignored) {logFile = null;}
+				logMessage(String.format("We are playing as %s.", colorName));
 				if (isBlack) {
 					// Make a move
 					Action move = null;
-					ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
+					ActionControlPair[] moves = actionFactory.getAction(gameState, true, topN);
 					if (useMinimax) {
 						move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
 					} else {
-						if (moves == null) {
-							move = null;
-						} else {
+						if (moves != null) {
 							move = moves[0].getAction();
 						}
 					}
 					moveCounter++;
 					assert move != null;
-					System.out.printf("Chosen move: %s%n", move);
+					logMessage(String.format("Chosen move: %s", move));
 					sendMove(move);
 				}
 			}
 			case GameMessage.GAME_ACTION_MOVE -> {
 				updateGameState(msgDetails);
 				Action action = new Action(msgDetails);
-				System.out.printf("%sWe are playing as %s.%s%n", ANSI_GREEN, isBlack ? "Black" : "White", ANSI_RESET);
-				System.out.printf("Received opponent move: %s%n", action);
+				logMessage(String.format("We are playing as %s.", colorName));
+				logMessage(String.format("Received opponent move: %s", action));
 				boolean valid = Utils.validateMove(gameState, action, isBlack? State.WHITE : State.BLACK, true);
 				moveCounter++;
 				if (!valid) {
-					System.out.printf("%sReceived an invalid Move!!!!!%s%n", ANSI_RED, ANSI_RESET);
+					logMessage("%sReceived an invalid Move!!!!!%s", ANSI_RED);
 				}
 				gameState = new State(gameState, action);
 				// Make a move
 				ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
 				Action move = null;
 				if (useMinimax) {
-					if (moves == null) {
-						move = null;
-					} else {
+					if (moves != null) {
 						move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
 					}
 				} else {
-					if (moves == null) {
-						move = null;
-					} else {
+					if (moves != null) {
 						move = moves[0].getAction();
 					}
 				}
 				moveCounter++;
 				if (moves == null) {
-					System.out.printf("%sNo moves available!! We lost.%s☹️%n", ANSI_RED, ANSI_RESET);
+					logMessage("%sNo moves available!! We lost.%s☹️%", ANSI_RED);
+					if (logFile != null) {
+						try {logFile.close();} catch (IOException ignored) {}
+						logFile = null;
+					}
 				} else {
-					System.out.printf("Chosen move: %s%n", move);
-					System.out.printf("%sMoving a %s Queen.%s%n", ANSI_RED, isBlack ? "Black": "White", ANSI_RESET);
+					logMessage(String.format("Chosen move: %s", move));
+					logMessage(String.format("Moving a %s Queen.", colorName), ANSI_RED);
 					sendMove(move);
 					if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
-						System.out.printf("%sNo moves available for opponent!! We won!%s\uD83C\uDF89%n", ANSI_GREEN, ANSI_RESET);
+						logMessage("No moves available for opponent!! We won!\uD83C\uDF89", ANSI_GREEN);
+						if (logFile != null) {
+                            try {logFile.close();} catch (IOException ignored) {}
+							logFile = null;
+                        }
 					}
 				}
 			}
 			default -> System.out.printf("Unknown Message Type: %s%n\t%s%n", messageType, msgDetails);
 		}
-		System.out.println(gameState.boardToString());
+		logMessage(gameState.boardToString());
     	return true;   	
     }
+
+	private void logMessage(String msg) {
+		if (logFile != null) {
+			try {
+				logFile.write(msg);
+				logFile.write('\n');
+				logFile.flush();
+			} catch (IOException ignored) {
+			}
+		}
+		System.out.printf("%s%n", msg);
+	}
+
+	private void logMessage(String msg, String formatChar) {
+		if (logFile != null) {
+            try {
+                logFile.write(msg);
+				logFile.write('\n');
+				logFile.flush();
+            } catch (IOException ignored) {
+            }
+        }
+		System.out.printf("%s%s%s%n", formatChar, msg, ANSI_RESET);
+	}
 
 	private void sendMove(Action move) {
 		Map<String, Object> payload = move.toServerResponse();
