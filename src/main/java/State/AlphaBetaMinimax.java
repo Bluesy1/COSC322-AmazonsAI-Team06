@@ -5,57 +5,60 @@ import java.util.Arrays;
 public class AlphaBetaMinimax {
 
     public static Action getBestMove(ActionControlPair[] actions, int depth, boolean isBlack, int topN, ActionFactory actionFactory, State state) {
-        for (int i = 0; i < actions.length; i++) {
-            actions[i].setControl(evaluateMove(actionFactory, depth, topN, true, actions[i].getControl(), state, isBlack, Integer.MIN_VALUE, Integer.MAX_VALUE));
+        if (actions == null || actions.length == 0) {
+            return null;
         }
 
-        int mostControl = Integer.MIN_VALUE;
-        int index = 0;
-        for (int i = 0; i < actions.length; i++) {
-            if (actions[i].getControl() > mostControl) {
-                mostControl = actions[i].getControl();
-                index = i;
+        int bestValue = Integer.MIN_VALUE;
+        Action bestAction = null;
+
+        for (ActionControlPair acp : actions) {
+            State newState = new State(state, acp.getAction());
+            int value = evaluateMove(actionFactory, depth - 1, topN, false, newState,
+                    isBlack, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            if (value > bestValue) {
+                bestValue = value;
+                bestAction = acp.getAction();
             }
         }
-
-        return actions[index].getAction();
+        return bestAction;
     }
 
-    private static int evaluateMove (ActionFactory actionFactory, int depth, int topN, boolean maximizingPlayer, int currentEval, State currentState, boolean maximizerIsBlack, int alpha, int beta) {
+    private static int evaluateMove (ActionFactory actionFactory, int depth, int topN, boolean maximizingPlayer, State currentState, boolean maximizerIsBlack, int alpha, int beta) {
         if (depth == 0) {
-            return currentEval;
+            return currentState.evaluate(maximizerIsBlack);
+        }
+
+        ActionControlPair[] childPaths = actionFactory.getAction(currentState, maximizingPlayer ? maximizerIsBlack : !maximizerIsBlack, topN);
+
+        if (childPaths == null || childPaths.length == 0) {
+            return currentState.evaluate(maximizerIsBlack);
         }
 
         if (maximizingPlayer) {
-            ActionControlPair[] childPaths = actionFactory.getAction(currentState, maximizerIsBlack, topN);
-            if (childPaths == null) { return currentEval;}
-            int index = 0;
-            int[] eval = new int[childPaths.length];
+            int maxEval = Integer.MIN_VALUE;
 
             for (ActionControlPair child : childPaths) {
                 State childState = new State(currentState, child.getAction());
-                eval[index] = evaluateMove(actionFactory, depth-1, topN, false, child.getControl(), childState, maximizerIsBlack, alpha, beta);
-                alpha = Math.max(alpha, eval[index]);
+                int eval = evaluateMove(actionFactory, depth-1, topN, false, childState, maximizerIsBlack, alpha, beta);
+                maxEval = Math.max(maxEval, eval);
+                alpha = Math.max(alpha, eval);
                 if (beta <= alpha) {break;}
-                index++;
             }
-            return Arrays.stream(eval).max().getAsInt();
+            return maxEval;
         }
 
         else {
-            ActionControlPair[] childPaths = actionFactory.getAction(currentState, !maximizerIsBlack, topN);
-            if (childPaths == null) { return currentEval;}
-            int index = 0;
-            int[] eval = new int[childPaths.length];
+            int minEval = Integer.MAX_VALUE;
 
             for (ActionControlPair child : childPaths) {
                 State childState = new State(currentState, child.getAction());
-                eval[index] = evaluateMove(actionFactory, depth-1, topN, true, child.getControl(), childState, maximizerIsBlack, alpha, beta);
-                beta = Math.min(beta, eval[index]);
+                int eval = evaluateMove(actionFactory, depth-1, topN, true, childState, maximizerIsBlack, alpha, beta);
+                minEval = Math.min(minEval, eval);
+                beta = Math.min(beta, eval);
                 if (beta <= alpha) {break;}
-                index++;
             }
-            return Arrays.stream(eval).min().getAsInt();
+            return minEval;
         }
     }
 }

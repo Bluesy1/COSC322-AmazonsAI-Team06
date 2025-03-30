@@ -135,6 +135,26 @@ public class State implements Cloneable {
         return sb.toString();
     }
 
+    public int evaluate(boolean forBlack) {
+        int color = forBlack ? State.BLACK : State.WHITE;
+        Pair[] ourQueens = getQueens(color);
+        Pair[] theirQueens = getQueens(forBlack ? State.WHITE : State.BLACK);
+        int[][] board = getBoard();
+
+        ArrayList<int[][]> reaches = MinDistanceActionFactory.minDistanceEvaluation(board, ourQueens, theirQueens);
+        int playerControl = 0, opponentControl = 0;
+        for (int r = 0; r < board.length; r++) {
+            for (int c = 0; c < board[0].length; c++) {
+                if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) {
+                    playerControl++;
+                } else if (reaches.get(1)[r][c] < reaches.get(0)[r][c]) {
+                    opponentControl++;
+                }
+            }
+        }
+        return playerControl - opponentControl;
+    }
+
     public int[][] getBoard() {
         return board;
     }
