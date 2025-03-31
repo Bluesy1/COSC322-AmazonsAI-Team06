@@ -32,6 +32,7 @@ public class Main extends GamePlayer {
     private final int DEPTH = 5;
 //    private int depth = INIT_DEPTH;
     private final int topN;
+    private static final Action initialMove = new Action(new Pair(3,9), new Pair(3,3), new Pair(6,3));
 
 
     /**
@@ -137,7 +138,9 @@ public class Main extends GamePlayer {
                 }
                 logMessage(String.format("We are playing as %s.", colorName));
                 if (isBlack) {
-                    makeGameMove();
+                    moveCounter++;
+                    sendMove(initialMove);
+                    logMessage(String.format("Made initial move: %s", initialMove));
                 }
             }
             case GameMessage.GAME_ACTION_MOVE -> {
