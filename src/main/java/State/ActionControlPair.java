@@ -2,16 +2,16 @@ package State;
 
 public class ActionControlPair implements Comparable<ActionControlPair> {
     private Action action;
-    private int Control;
+    private int control;
 
     public ActionControlPair(Action action, int Control) {
         this.action = action;
-        this.Control = Control;
+        this.control = Control;
     }
 
     @Override
     public int compareTo(ActionControlPair o) {
-        return Integer.compare(o.Control, Control);
+        return Integer.compare(o.control, control);
     }
 
     public Action getAction() {
@@ -19,11 +19,11 @@ public class ActionControlPair implements Comparable<ActionControlPair> {
     }
 
     public int getControl() {
-        return Control;
+        return control;
     }
 
     public void setControl(int Control) {
-        this.Control = Control;
+        this.control = Control;
     }
 
     public void setAction(Action action) {
