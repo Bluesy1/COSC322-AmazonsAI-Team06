@@ -1,7 +1,9 @@
 package State;
 
+import java.util.Queue;
+
 public interface ActionFactory {
 
-    public Action getAction(State state, boolean black);
+    public ActionControlPair[] getAction(State state, boolean black, int topN);
 
 }

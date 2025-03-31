@@ -7,35 +7,6 @@ public class MinDistanceActionFactory implements ActionFactory {
     private static final int[] DR = {-1, 1, 0, 0, -1, -1, 1, 1};
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
 
-    public Action getAction(State state, boolean black) {
-        int color = black ? State.BLACK : State.WHITE;
-        ArrayList<Action> moves = Generator.availableMoves(state, color);
-
-        Collections.shuffle(moves);
-        if (moves.isEmpty()) {
-            return null;
-        }
-
-        int currentControl = Integer.MIN_VALUE;
-        Action bfsAction = null;
-        for (Action action : moves) {
-            if (!Utils.validateMove(state, action, color, false)) {continue;}
-            State actionOutcome = new State(state, action);
-            Pair[] ourQueens = actionOutcome.getQueens(color);
-            Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
-            int[][] board = actionOutcome.getBoard();
-
-            int tempControl = minDistanceEvaluation(board, ourQueens, theirQueens);
-            if (tempControl > currentControl) {
-                bfsAction = action;
-                currentControl = tempControl;
-            }
-            //if (System.currentTimeMillis() > endTime) break;
-        }
-
-        return bfsAction;
-    }
-
     public static int[][] bfsMinDistance(int[][] board, int startRow, int startCol) {
         int rows = board.length, cols = board[0].length;
         int[][] distances = new int[rows][cols];
@@ -64,35 +35,79 @@ public class MinDistanceActionFactory implements ActionFactory {
         return distances;
     }
 
-    public static int minDistanceEvaluation(int[][] board, Pair[] playerAmazons, Pair[] opponentAmazons) {
+    public static ArrayList<int[][]> minDistanceEvaluation(int[][] board, Pair[] playerAmazons, Pair[] opponentAmazons) {
         int rows = board.length, cols = board[0].length;
         int[][] playerReach = new int[rows][cols];
         int[][] opponentReach = new int[rows][cols];
         for (int[] row : playerReach) Arrays.fill(row, Integer.MAX_VALUE);
         for (int[] row : opponentReach) Arrays.fill(row, Integer.MAX_VALUE);
 
-        for (int i = 0; i < playerAmazons.length; i++) {
-            int[][] distances = bfsMinDistance(board, playerAmazons[i].col, playerAmazons[i].row);
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    playerReach[r][c] = Math.min(playerReach[r][c], distances[r][c]);
+        reachCalculate(playerReach, board, playerAmazons);
+
+        reachCalculate(opponentReach, board, opponentAmazons);
+
+        ArrayList<int[][]> reaches = new ArrayList<>();
+        reaches.add(playerReach);
+        reaches.add(opponentReach);
+
+        return reaches;
+    }
+
+    public static void reachCalculate(int[][] reach, int[][] board, Pair[] amazons) {
+        for (Pair amazon : amazons) {
+            int[][] distances = bfsMinDistance(board, amazon.col, amazon.row);
+            for (int r = 0; r < board.length; r++)
+                for (int c = 0; c < board[0].length; c++)
+                    reach[r][c] = Math.min(reach[r][c], distances[r][c]);
+        }
+    }
+
+    @Override
+    public ActionControlPair[] getAction(State state, boolean black, int topN) {
+        int color = black ? State.BLACK : State.WHITE;
+        ArrayList<Action> moves = Generator.availableMoves(state, color);
+
+        if (moves.size() < topN) {
+            topN = moves.size();
         }
 
-        for (int i = 0; i < opponentAmazons.length; i++) {
-            int[][] distances = bfsMinDistance(board, opponentAmazons[i].col, opponentAmazons[i].row);
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < cols; c++)
-                    opponentReach[r][c] = Math.min(opponentReach[r][c], distances[r][c]);
+        if (moves.isEmpty()) {
+            return null;
         }
 
-        int playerControl = 0, opponentControl = 0;
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                if (playerReach[r][c] < opponentReach[r][c]) playerControl++;
-                else if (opponentReach[r][c] < playerReach[r][c]) opponentControl++;
+        ArrayList<ActionControlPair> actions = new ArrayList<ActionControlPair>(moves.size());
+        ActionControlPair[] bfsActionArray = new ActionControlPair[topN];
+
+        Collections.shuffle(moves);
+
+        for (Action action : moves) {
+            State actionOutcome = new State(state, action);
+            Pair[] ourQueens = actionOutcome.getQueens(color);
+            Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
+            int[][] board = actionOutcome.getBoard();
+
+            ArrayList<int[][]> reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
+
+            int playerControl = 0, opponentControl = 0;
+            for (int r = 0; r < board.length; r++) {
+                for (int c = 0; c < board[0].length; c++) {
+                    if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) {
+                        playerControl++;
+                    } else {
+                        opponentControl++;
+                    }
+                }
             }
+
+            actions.add(new ActionControlPair(action, playerControl - opponentControl));
         }
 
-        return playerControl - opponentControl;
+        Collections.sort(actions);
+
+        for (int i = 0; i < topN; i++) {
+            bfsActionArray[i] = actions.get(i);
+        }
+
+        return bfsActionArray;
     }
 }
