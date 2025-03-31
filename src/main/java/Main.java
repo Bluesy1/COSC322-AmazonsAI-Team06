@@ -30,7 +30,7 @@ public class Main extends GamePlayer {
     private final boolean useMinimax;
     private FileWriter logFile = null;
     private final int INIT_DEPTH = 8;
-	private int depth = INIT_DEPTH;
+    private int depth = INIT_DEPTH;
 
 
     /**
@@ -102,7 +102,6 @@ public class Main extends GamePlayer {
             case GameMessage.GAME_STATE_BOARD -> {
                 // noinspection unchecked
                 ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
-                System.out.println(board);
                 getGameGUI().setGameState(board);
                 gameState = new State(board);
             }
@@ -144,7 +143,7 @@ public class Main extends GamePlayer {
                 logMessage(String.format("Received opponent move: %s", action));
                 boolean valid = Utils.validateMove(gameState, action, isBlack ? State.WHITE : State.BLACK, true);
                 moveCounter++;
-                depth = INIT_DEPTH + moveCounter/8;
+                depth = INIT_DEPTH + moveCounter / 8;
                 if (!valid) {
                     logMessage("%sReceived an invalid Move!!!!!%s", ANSI_RED);
                 }
