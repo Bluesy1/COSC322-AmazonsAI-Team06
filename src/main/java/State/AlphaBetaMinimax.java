@@ -2,9 +2,10 @@ package State;
 
 public class AlphaBetaMinimax {
 
-    public static final long maxTimeMillis = 28 * 1000;
+    public static final long maxTimeMillis = 28L * 1000;
+    private static long startTime;
 
-    public static Action getBestMove(ActionControlPair[] actions, int depth, boolean isBlack, int topN, ActionFactory actionFactory, State state) {
+    public static Action getBestMove(ActionControlPair[] actions, int depth, boolean isBlack, int topN, ActionFactory actionFactory, State state, int moveCounter) {
         if (actions == null || actions.length == 0) {
             return null;
         }
@@ -12,20 +13,23 @@ public class AlphaBetaMinimax {
         int bestValue = Integer.MIN_VALUE;
         Action bestAction = null;
 
-        long stopTime = System.currentTimeMillis() + maxTimeMillis;
-
-        for (ActionControlPair acp : actions) {
-            if (System.currentTimeMillis() > stopTime) {
-                System.out.println("!!!!!STOP TIME EXCEEDED, BAILING OUT!!!!!");
-                break;
+        startTime = System.currentTimeMillis();
+        do {
+            for (ActionControlPair acp : actions) {
+                boolean outOfTime = startTime + maxTimeMillis < System.currentTimeMillis();
+                if (outOfTime) {
+                    System.out.println("!!!!!STOP TIME EXCEEDED, BAILING OUT!!!!!");
+                    break;
+                }
+                State newState = new State(state, acp.getAction());
+                int value = evaluateMove(actionFactory, depth - 1, topN, false, newState, isBlack, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                if (value > bestValue) {
+                    bestValue = value;
+                    bestAction = acp.getAction();
+                }
             }
-            State newState = new State(state, acp.getAction());
-            int value = evaluateMove(actionFactory, depth - 1, topN, false, newState, isBlack, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            if (value > bestValue) {
-                bestValue = value;
-                bestAction = acp.getAction();
-            }
-        }
+            depth++;
+        } while (moveCounter + depth < 92 && startTime + maxTimeMillis < System.currentTimeMillis());
         return bestAction;
     }
 
@@ -44,6 +48,10 @@ public class AlphaBetaMinimax {
             int maxEval = Integer.MIN_VALUE;
 
             for (ActionControlPair child : childPaths) {
+                if (startTime + maxTimeMillis < System.currentTimeMillis()) {
+                    System.out.println("!!!!!STOP TIME EXCEEDED, BAILING OUT!!!!!");
+                    return maxEval;
+                }
                 State childState = new State(currentState, child.getAction());
                 int eval = evaluateMove(actionFactory, depth - 1, topN, false, childState, maximizerIsBlack, alpha, beta);
                 maxEval = Math.max(maxEval, eval);
@@ -57,6 +65,10 @@ public class AlphaBetaMinimax {
             int minEval = Integer.MAX_VALUE;
 
             for (ActionControlPair child : childPaths) {
+                if (startTime + maxTimeMillis < System.currentTimeMillis()) {
+                    System.out.println("!!!!!STOP TIME EXCEEDED, BAILING OUT!!!!!");
+                    return minEval;
+                }
                 State childState = new State(currentState, child.getAction());
                 int eval = evaluateMove(actionFactory, depth - 1, topN, true, childState, maximizerIsBlack, alpha, beta);
                 minEval = Math.min(minEval, eval);

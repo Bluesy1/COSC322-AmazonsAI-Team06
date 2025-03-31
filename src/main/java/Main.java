@@ -102,6 +102,7 @@ public class Main extends GamePlayer {
             case GameMessage.GAME_STATE_BOARD -> {
                 // noinspection unchecked
                 ArrayList<Integer> board = (ArrayList<Integer>) msgDetails.get(AmazonsGameMessage.GAME_STATE);
+                System.out.println(board);
                 getGameGUI().setGameState(board);
                 gameState = new State(board);
             }
@@ -173,7 +174,7 @@ public class Main extends GamePlayer {
         long startTime = System.currentTimeMillis();
         ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
         if (useMinimax) {
-            move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState);
+            move = AlphaBetaMinimax.getBestMove(moves, DEPTH, isBlack, topN, actionFactory, gameState, moveCounter);
         } else {
             if (moves != null) {
                 move = moves[0].getAction();
