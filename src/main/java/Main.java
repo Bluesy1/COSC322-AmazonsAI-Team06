@@ -6,9 +6,14 @@ import ygraph.ai.smartfox.games.GamePlayer;
 import ygraph.ai.smartfox.games.amazons.AmazonsGameMessage;
 import ygraph.ai.smartfox.games.amazons.HumanPlayer;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
+import java.util.Random;
 
 
 public class Main extends GamePlayer {
@@ -16,24 +21,39 @@ public class Main extends GamePlayer {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_GREEN = "\u001B[32m";
-
-    private GameClient gameClient = null;
+    private static final Action initialMove = new Action(new Pair(3, 9), new Pair(3, 3), new Pair(6, 3));
     private final BaseGameGUI gameGui;
-    private State gameState = null;
-
-    private String userName;
     private final String passwd;
+    private final ActionFactory actionFactory;
+    private final boolean useMinimax;
+    private final int DEPTH = 5;
+    //    private int depth = INIT_DEPTH;
+    private final int topN;
+    private GameClient gameClient = null;
+    private State gameState = null;
+    private String userName;
     private boolean isBlack;
     private String colorName;
-    private final ActionFactory actionFactory;
     private int moveCounter = 0;
-    private final boolean useMinimax;
     private FileWriter logFile = null;
-    private final int DEPTH = 5;
-//    private int depth = INIT_DEPTH;
-    private final int topN;
-    private static final Action initialMove = new Action(new Pair(3,9), new Pair(3,3), new Pair(6,3));
 
+
+    /**
+     * Any name and passwd
+     *
+     * @param userName any string (used as display username in gui)
+     * @param passwd   any string (can be empty)
+     */
+    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMinimax, int topN) {
+        this.userName = userName + "-TopN=" + topN + "-" + (new Random()).nextInt(1000);
+        this.passwd = passwd;
+        this.actionFactory = actionFactory;
+        this.useMinimax = useMinimax;
+        //To make a GUI-based player, create an instance of BaseGameGUI
+        //and implement the method getGameGUI() accordingly
+        this.gameGui = new BaseGameGUI(this);
+        this.topN = topN;
+    }
 
     /**
      * The main method
@@ -64,28 +84,6 @@ public class Main extends GamePlayer {
             java.awt.EventQueue.invokeLater(player::Go);
         }
     }
-
-    /**
-     * Any name and passwd
-     *
-     * @param userName any string (used as display username in gui)
-     * @param passwd   any string (can be empty)
-     */
-    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMinimax, int topN) {
-        this.userName = userName +
-                "-TopN=" +
-                topN +
-                "-" +
-                (new Random()).nextInt(1000);
-        this.passwd = passwd;
-        this.actionFactory = actionFactory;
-        this.useMinimax = useMinimax;
-        //To make a GUI-based player, create an instance of BaseGameGUI
-        //and implement the method getGameGUI() accordingly
-        this.gameGui = new BaseGameGUI(this);
-        this.topN = topN;
-    }
-
 
     @Override
     public void onLogin() {
@@ -237,11 +235,7 @@ public class Main extends GamePlayer {
 
     @SuppressWarnings("unchecked")
     private void updateGameState(Map<String, Object> move) {
-        getGameGUI().updateGameState(
-                (ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_CURR),
-                (ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_NEXT),
-                (ArrayList<Integer>) move.get(AmazonsGameMessage.ARROW_POS)
-        );
+        getGameGUI().updateGameState((ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_CURR), (ArrayList<Integer>) move.get(AmazonsGameMessage.QUEEN_POS_NEXT), (ArrayList<Integer>) move.get(AmazonsGameMessage.ARROW_POS));
     }
 
     @Override

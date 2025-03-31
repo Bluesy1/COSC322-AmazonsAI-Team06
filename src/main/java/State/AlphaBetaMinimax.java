@@ -5,8 +5,8 @@ import java.util.HashMap;
 public class AlphaBetaMinimax {
 
     public static final long maxTimeMillis = 28L * 1000;
-    private static long stopTime;
     private static final HashMap<Long, TranspositionEntry> transpositionTable = new HashMap<>();
+    private static long stopTime;
 
     public static Action getBestMove(ActionControlPair[] actions, int depth, boolean isBlack, int topN, ActionFactory actionFactory, State state, int moveCounter) {
         if (actions == null || actions.length == 0) {
@@ -24,6 +24,7 @@ public class AlphaBetaMinimax {
             }
             for (ActionControlPair acp : actions) {
                 if (stopTime < System.currentTimeMillis()) {
+                    System.out.println("!!!!!STOP TIME EXCEEDED, BAILING OUT!!!!!");
                     break;
                 }
                 State newState = new State(state, acp.getAction());
@@ -34,8 +35,9 @@ public class AlphaBetaMinimax {
                     bestAction = acp.getAction();
                 }
             }
-            System.out.printf("Initial Depth: %d, searched depth: %d, out of time:%b, %n", initialDepth, depth++, stopTime < System.currentTimeMillis());
-        } while (moveCounter + depth < 92 && stopTime > System.currentTimeMillis() && depth - initialDepth + 1 < 20);
+            System.out.printf("Initial Depth: %d, Searched Depth: %d, Out of Time: %b.%n", initialDepth, depth++, stopTime < System.currentTimeMillis());
+        } while (stopTime > System.currentTimeMillis() && moveCounter + depth < 92 && depth - initialDepth + 1 < 25 // At max do 25 iterations
+        );
         return bestAction;
     }
 
@@ -91,6 +93,10 @@ public class AlphaBetaMinimax {
         return bestEval;
     }
 
+    private enum TranspositionFlag {
+        EXACT, LOWER_BOUND, UPPER_BOUND
+    }
+
     private static class TranspositionEntry {
         int value, depth;
         TranspositionFlag flag;
@@ -100,9 +106,5 @@ public class AlphaBetaMinimax {
             this.depth = depth;
             this.flag = flag;
         }
-    }
-
-    private enum TranspositionFlag {
-        EXACT, LOWER_BOUND, UPPER_BOUND
     }
 }

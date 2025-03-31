@@ -1,12 +1,9 @@
 package State;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class State implements Cloneable {
-
-    private Pair[] whiteQueens;
-    private Pair[] blackQueens;
-    private int[][] board;
 
     public static final int BOARD_SIZE = 10;
     public static final int BLACK = 1;
@@ -14,11 +11,10 @@ public class State implements Cloneable {
     public static final int ARROW = 3;
     private static final long[][][] zobristTable;
     private static final long zobristSide;
-    private boolean isBlackTurn;
 
     static {
         Random rand = new Random(123456789); // Seed for consistency
-        zobristTable = new long[BOARD_SIZE][BOARD_SIZE][3]; // 3 for Empty, White, Black queens
+        zobristTable = new long[BOARD_SIZE][BOARD_SIZE][3]; // 3 for Black and White queens as well as arrows
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
                 for (int k = 0; k < 3; k++) {
@@ -28,6 +24,11 @@ public class State implements Cloneable {
         }
         zobristSide = rand.nextLong();
     }
+
+    private Pair[] whiteQueens;
+    private Pair[] blackQueens;
+    private int[][] board;
+    private boolean isBlackTurn;
 
     public State(ArrayList<Integer> gameState) {
         board = new int[BOARD_SIZE][BOARD_SIZE];
@@ -179,11 +180,6 @@ public class State implements Cloneable {
 
     public int[][] getBoard() {
         return board;
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.deepHashCode(board);
     }
 
     public long getZobristHash() {

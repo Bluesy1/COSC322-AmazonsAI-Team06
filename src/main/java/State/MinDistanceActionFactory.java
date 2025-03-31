@@ -7,61 +7,6 @@ public class MinDistanceActionFactory implements ActionFactory {
     private static final int[] DR = {-1, 1, 0, 0, -1, -1, 1, 1};
     private static final int[] DC = {0, 0, -1, 1, -1, 1, -1, 1};
 
-    private int currentControl;
-    private ActionControlPair[] bfsActionArray;
-    private ArrayList<ActionControlPair> actions;
-
-    @Override
-    public ActionControlPair[] getAction(State state, boolean black, int topN) {
-        int color = black ? State.BLACK : State.WHITE;
-        ArrayList<Action> moves = Generator.availableMoves(state, color);
-
-        if (moves.size() < topN) {
-            topN = moves.size();
-        }
-
-        if (moves.isEmpty()) {
-            return null;
-        }
-
-        currentControl = Integer.MIN_VALUE;
-        actions = new ArrayList<ActionControlPair>(moves.size());
-        bfsActionArray = new ActionControlPair[topN];
-
-        Collections.shuffle(moves);
-
-        for (Action action : moves) {
-            State actionOutcome = new State(state, action);
-            Pair[] ourQueens = actionOutcome.getQueens(color);
-            Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
-            int[][] board = actionOutcome.getBoard();
-
-            ArrayList<int[][]> reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
-
-            int playerControl = 0, opponentControl = 0;
-            for (int r = 0; r < board.length; r++) {
-                for (int c = 0; c < board[0].length; c++) {
-                    if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) {
-                        playerControl++;
-                    } else {
-                        opponentControl++;
-                    }
-                }
-            }
-
-            actions.add(new ActionControlPair(action, playerControl - opponentControl));
-        }
-
-        Collections.sort(actions);
-
-        for (int i = 0; i < topN; i++) {
-            bfsActionArray[i] = actions.get(i);
-        }
-
-
-        return bfsActionArray;
-    }
-
     public static int[][] bfsMinDistance(int[][] board, int startRow, int startCol) {
         int rows = board.length, cols = board[0].length;
         int[][] distances = new int[rows][cols];
@@ -115,5 +60,54 @@ public class MinDistanceActionFactory implements ActionFactory {
                 for (int c = 0; c < board[0].length; c++)
                     reach[r][c] = Math.min(reach[r][c], distances[r][c]);
         }
+    }
+
+    @Override
+    public ActionControlPair[] getAction(State state, boolean black, int topN) {
+        int color = black ? State.BLACK : State.WHITE;
+        ArrayList<Action> moves = Generator.availableMoves(state, color);
+
+        if (moves.size() < topN) {
+            topN = moves.size();
+        }
+
+        if (moves.isEmpty()) {
+            return null;
+        }
+
+        ArrayList<ActionControlPair> actions = new ArrayList<ActionControlPair>(moves.size());
+        ActionControlPair[] bfsActionArray = new ActionControlPair[topN];
+
+        Collections.shuffle(moves);
+
+        for (Action action : moves) {
+            State actionOutcome = new State(state, action);
+            Pair[] ourQueens = actionOutcome.getQueens(color);
+            Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
+            int[][] board = actionOutcome.getBoard();
+
+            ArrayList<int[][]> reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
+
+            int playerControl = 0, opponentControl = 0;
+            for (int r = 0; r < board.length; r++) {
+                for (int c = 0; c < board[0].length; c++) {
+                    if (reaches.get(0)[r][c] < reaches.get(1)[r][c]) {
+                        playerControl++;
+                    } else {
+                        opponentControl++;
+                    }
+                }
+            }
+
+            actions.add(new ActionControlPair(action, playerControl - opponentControl));
+        }
+
+        Collections.sort(actions);
+
+        for (int i = 0; i < topN; i++) {
+            bfsActionArray[i] = actions.get(i);
+        }
+
+        return bfsActionArray;
     }
 }
