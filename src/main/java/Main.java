@@ -29,6 +29,8 @@ public class Main extends GamePlayer {
     private int moveCounter = 0;
     private final boolean useMinimax;
     private FileWriter logFile = null;
+    private final int INIT_DEPTH = 8;
+	private int depth = INIT_DEPTH;
 
 
     /**
@@ -131,7 +133,7 @@ public class Main extends GamePlayer {
                 }
                 logMessage(String.format("We are playing as %s.", colorName));
                 if (isBlack) {
-                    makeGameMove();
+                    makeGameMove(depth);
                 }
             }
             case GameMessage.GAME_ACTION_MOVE -> {
@@ -141,11 +143,12 @@ public class Main extends GamePlayer {
                 logMessage(String.format("Received opponent move: %s", action));
                 boolean valid = Utils.validateMove(gameState, action, isBlack ? State.WHITE : State.BLACK, true);
                 moveCounter++;
+                depth = INIT_DEPTH + moveCounter/8;
                 if (!valid) {
                     logMessage("%sReceived an invalid Move!!!!!%s", ANSI_RED);
                 }
                 gameState = new State(gameState, action);
-                if (makeGameMove()) {
+                if (makeGameMove(depth)) {
                     if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
                         logMessage("No moves available for opponent!! We won!\uD83C\uDF89", ANSI_GREEN);
                         if (logFile != null) {
@@ -164,9 +167,8 @@ public class Main extends GamePlayer {
         return true;
     }
 
-    private boolean makeGameMove() {
+    private boolean makeGameMove(int DEPTH) {
         int topN = 2;
-        int DEPTH = 8;
         Action move = null;
         long startTime = System.currentTimeMillis();
         ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
@@ -181,7 +183,7 @@ public class Main extends GamePlayer {
             moveCounter++;
             sendMove(move);
             long endTime = System.currentTimeMillis();
-            logMessage(String.format("Chosen move: %s (Time Taken: %.3f s)", move, endTime - startTime / 1000D));
+            logMessage(String.format("Chosen move: %s (Time Taken: %.3f s)", move, (endTime - startTime) / 1000D));
             return true;
         } else {
             logMessage("No moves available!! We lost.☹️", ANSI_RED);
