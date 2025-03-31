@@ -29,8 +29,8 @@ public class Main extends GamePlayer {
     private int moveCounter = 0;
     private final boolean useMinimax;
     private FileWriter logFile = null;
-    private final int INIT_DEPTH = 8;
-    private int depth = INIT_DEPTH;
+    private final int DEPTH = 5;
+//    private int depth = INIT_DEPTH;
     private final int topN;
 
 
@@ -137,7 +137,7 @@ public class Main extends GamePlayer {
                 }
                 logMessage(String.format("We are playing as %s.", colorName));
                 if (isBlack) {
-                    makeGameMove(depth);
+                    makeGameMove();
                 }
             }
             case GameMessage.GAME_ACTION_MOVE -> {
@@ -147,12 +147,12 @@ public class Main extends GamePlayer {
                 logMessage(String.format("Received opponent move: %s", action));
                 boolean valid = Utils.validateMove(gameState, action, isBlack ? State.WHITE : State.BLACK, true);
                 moveCounter++;
-                depth = INIT_DEPTH + moveCounter / 8;
+//                depth = INIT_DEPTH + moveCounter / 8;
                 if (!valid) {
                     logMessage("%sReceived an invalid Move!!!!!%s", ANSI_RED);
                 }
                 gameState = new State(gameState, action);
-                if (makeGameMove(depth)) {
+                if (makeGameMove()) {
                     if (Generator.availableMoves(gameState, isBlack ? State.WHITE : State.BLACK).isEmpty()) {
                         logMessage("No moves available for opponent!! We won!\uD83C\uDF89", ANSI_GREEN);
                         if (logFile != null) {
@@ -171,7 +171,7 @@ public class Main extends GamePlayer {
         return true;
     }
 
-    private boolean makeGameMove(int DEPTH) {
+    private boolean makeGameMove() {
         Action move = null;
         long startTime = System.currentTimeMillis();
         ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);
