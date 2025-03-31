@@ -31,6 +31,7 @@ public class Main extends GamePlayer {
     private FileWriter logFile = null;
     private final int INIT_DEPTH = 8;
     private int depth = INIT_DEPTH;
+    private final int topN;
 
 
     /**
@@ -39,11 +40,11 @@ public class Main extends GamePlayer {
      * @param args for name and passwd (current, any string would work)
      */
     public static void main(String[] args) {
-        Main player = new Main("Team-06", "", new MinDistanceActionFactory(), true);
+        Main player = new Main("Team-06", "", new MinDistanceActionFactory(), true, 2);
 
         switch (args.length > 0 ? args[0] : "") {
             case "2" -> {
-                Main player2 = new Main("Team-06-reference", "", new MinDistanceActionFactory(), false);
+                Main player2 = new Main("Team-06-reference", "", new MinDistanceActionFactory(), true, 3);
                 player2.Go();
             }
             case "human" -> {
@@ -69,8 +70,10 @@ public class Main extends GamePlayer {
      * @param userName any string (used as display username in gui)
      * @param passwd   any string (can be empty)
      */
-    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMinimax) {
+    public Main(String userName, String passwd, ActionFactory actionFactory, boolean useMinimax, int topN) {
         this.userName = userName +
+                "-TopN=" +
+                topN +
                 "-" +
                 (new Random()).nextInt(1000);
         this.passwd = passwd;
@@ -79,6 +82,7 @@ public class Main extends GamePlayer {
         //To make a GUI-based player, create an instance of BaseGameGUI
         //and implement the method getGameGUI() accordingly
         this.gameGui = new BaseGameGUI(this);
+        this.topN = topN;
     }
 
 
@@ -168,7 +172,6 @@ public class Main extends GamePlayer {
     }
 
     private boolean makeGameMove(int DEPTH) {
-        int topN = 2;
         Action move = null;
         long startTime = System.currentTimeMillis();
         ActionControlPair[] moves = actionFactory.getAction(gameState, isBlack, topN);

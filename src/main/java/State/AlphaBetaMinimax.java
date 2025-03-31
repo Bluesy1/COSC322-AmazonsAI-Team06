@@ -35,7 +35,7 @@ public class AlphaBetaMinimax {
                 }
             }
             System.out.printf("Initial Depth: %d, searched depth: %d, out of time:%b, %n", initialDepth, depth++, stopTime < System.currentTimeMillis());
-        } while (moveCounter + depth < 92 && stopTime > System.currentTimeMillis());
+        } while (moveCounter + depth < 92 && stopTime > System.currentTimeMillis() && depth - initialDepth + 1 < 20);
         return bestAction;
     }
 

@@ -88,9 +88,7 @@ public class State implements Cloneable {
             case BLACK -> {
                 return blackQueens;
             }
-            default -> {
-                throw new IllegalArgumentException(color + " is an invalid color");
-            }
+            default -> throw new IllegalArgumentException(color + " is an invalid color");
         }
     }
 
