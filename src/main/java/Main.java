@@ -150,7 +150,7 @@ public class Main extends GamePlayer {
                 moveCounter++;
 //                depth = INIT_DEPTH + moveCounter / 8;
                 if (!valid) {
-                    logMessage("%sReceived an invalid Move!!!!!%s", ANSI_RED);
+                    logMessage("Received an invalid Move!!!!!", ANSI_RED);
                 }
                 gameState = new State(gameState, action);
                 if (makeGameMove()) {
