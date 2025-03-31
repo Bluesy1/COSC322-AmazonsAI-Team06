@@ -136,9 +136,10 @@ public class Main extends GamePlayer {
                 }
                 logMessage(String.format("We are playing as %s.", colorName));
                 if (isBlack) {
-                    moveCounter++;
-                    sendMove(initialMove);
-                    logMessage(String.format("Made initial move: %s", initialMove));
+//                    moveCounter++;
+//                    sendMove(initialMove);
+//                    logMessage(String.format("Made initial move: %s", initialMove));
+                    makeGameMove();
                 }
             }
             case GameMessage.GAME_ACTION_MOVE -> {
