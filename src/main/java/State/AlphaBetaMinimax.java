@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class AlphaBetaMinimax {
 
-    public static final long maxTimeMillis = 28L * 1000;
+    public static final long maxTimeMillis = 29L * 1000;
     private static final HashMap<Long, TranspositionEntry> transpositionTable = new HashMap<>();
     private static long stopTime;
 

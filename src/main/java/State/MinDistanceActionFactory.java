@@ -2,6 +2,7 @@ package State;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MinDistanceActionFactory implements ActionFactory {
 
@@ -78,9 +79,7 @@ public class MinDistanceActionFactory implements ActionFactory {
 
         ActionControlPair[] bfsActionArray = new ActionControlPair[topN];
 
-        Collections.shuffle(moves);
-
-        List<ActionControlPair> actions = moves.parallelStream()
+        List<ActionControlPair> actions = (moves.size() <= 10 ? moves.stream() : moves.parallelStream())
                 .map(action ->{
             State actionOutcome = new State(state, action);
             Pair[] ourQueens = actionOutcome.getQueens(color);
@@ -102,10 +101,7 @@ public class MinDistanceActionFactory implements ActionFactory {
             }
 
             return new ActionControlPair(action, playerControl - opponentControl);
-        })
-        .collect(Collectors.toList());
-
-        Collections.sort(actions);
+        }).sorted().toList();
 
         for (int i = 0; i < topN; i++) {
             bfsActionArray[i] = actions.get(i);
