@@ -75,12 +75,10 @@ public class MinDistanceActionFactory implements ActionFactory {
             return null;
         }
 
-        ArrayList<ActionControlPair> actions = new ArrayList<ActionControlPair>(moves.size());
         ActionControlPair[] bfsActionArray = new ActionControlPair[topN];
 
-        Collections.shuffle(moves);
-
-        for (Action action : moves) {
+        List<ActionControlPair> actions = (moves.size() <= 10 ? moves.stream() : moves.parallelStream())
+                .map(action ->{
             State actionOutcome = new State(state, action);
             Pair[] ourQueens = actionOutcome.getQueens(color);
             Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
@@ -100,10 +98,8 @@ public class MinDistanceActionFactory implements ActionFactory {
                 }
             }
 
-            actions.add(new ActionControlPair(action, playerControl - opponentControl));
-        }
-
-        Collections.sort(actions);
+            return new ActionControlPair(action, playerControl - opponentControl);
+        }).sorted().toList();
 
         for (int i = 0; i < topN; i++) {
             bfsActionArray[i] = actions.get(i);
