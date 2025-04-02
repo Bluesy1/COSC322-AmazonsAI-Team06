@@ -188,7 +188,8 @@ public class Main extends GamePlayer {
             moveCounter++;
             sendMove(move);
             long endTime = System.currentTimeMillis();
-            logMessage(String.format("Chosen move: %s (Time Taken: %.3f s)", move, (endTime - startTime) / 1000D));
+            int heuristic = MinDistanceActionFactory.evaluateState(gameState, isBlack);
+            logMessage(String.format("Chosen move: %s (Time Taken: %.3f s) Heuristic: %d", move, (endTime - startTime) / 1000D, heuristic));
             return true;
         } else {
             logMessage("No moves available!! We lost.☹️", ANSI_RED);

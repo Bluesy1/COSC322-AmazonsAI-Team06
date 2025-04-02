@@ -78,27 +78,9 @@ public class MinDistanceActionFactory implements ActionFactory {
         ActionControlPair[] bfsActionArray = new ActionControlPair[topN];
 
         List<ActionControlPair> actions = (moves.size() <= 10 ? moves.stream() : moves.parallelStream())
-                .map(action ->{
+                .map(action -> {
             State actionOutcome = new State(state, action);
-            Pair[] ourQueens = actionOutcome.getQueens(color);
-            Pair[] theirQueens = actionOutcome.getQueens(black ? State.WHITE : State.BLACK);
-            int[][] board = actionOutcome.getBoard();
-
-            ArrayList<int[][]> reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
-
-            int playerControl = 0, opponentControl = 0;
-            for (int r = 0; r < board.length; r++) {
-                for (int c = 0; c < board[0].length; c++) {
-                    int cmp = Integer.compare(reaches.get(0)[r][c], reaches.get(1)[r][c]);
-                    if (cmp < 0) {
-                        playerControl++;
-                    } else if (cmp > 0){
-                        opponentControl++;
-                    }
-                }
-            }
-
-            return new ActionControlPair(action, playerControl - opponentControl);
+            return new ActionControlPair(action, evaluateState(actionOutcome, black));
         }).sorted().toList();
 
         for (int i = 0; i < topN; i++) {
@@ -106,5 +88,27 @@ public class MinDistanceActionFactory implements ActionFactory {
         }
 
         return bfsActionArray;
+    }
+
+    public static int evaluateState(State state, boolean black) {
+
+        Pair[] ourQueens = state.getQueens(black ? State.BLACK : State.WHITE);
+        Pair[] theirQueens = state.getQueens(black ? State.WHITE : State.BLACK);
+        int[][] board = state.getBoard();
+
+        ArrayList<int[][]> reaches = minDistanceEvaluation(board, ourQueens, theirQueens);
+
+        int playerControl = 0, opponentControl = 0;
+        for (int r = 0; r < board.length; r++) {
+            for (int c = 0; c < board[0].length; c++) {
+                int cmp = Integer.compare(reaches.get(0)[r][c], reaches.get(1)[r][c]);
+                if (cmp < 0) {
+                    playerControl++;
+                } else if (cmp > 0){
+                    opponentControl++;
+                }
+            }
+        }
+        return playerControl - opponentControl;
     }
 }
