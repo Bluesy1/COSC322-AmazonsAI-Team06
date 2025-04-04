@@ -14,6 +14,6 @@ In the tournament stage, this bot came in first, with an official overall win ra
 ## Created By
 
 - **Gavin Kendal-Freedman** @Bluesy1
-- **Veer** @VeerUBC/@VeerR09
+- **Veer Ramrakhiani** @VeerUBC/@VeerR09
 - **Priyanshu Chugh** @priyanshupc04
 - **Branden Kennedy** @branden6
