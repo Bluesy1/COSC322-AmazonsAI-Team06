@@ -1,4 +1,3 @@
-/*
 package State;
 
 import java.util.ArrayList;
@@ -13,12 +12,13 @@ public class RandomAction implements ActionFactory {
     };
 
     @Override
-    public Action[] getAction(State state, boolean black, int movesPlayed, int topN) {
+    public ActionControlPair[] getAction(State state, boolean black, int topN) {
         int color = black ? State.BLACK : State.WHITE;
         ArrayList<Action> moves = Generator.availableMoves(state, color);
-        Action[] actions = new Action[1];
-        actions[0] = moves.get(random.nextInt(moves.size()));
+        ActionControlPair[] actions = new ActionControlPair[1];
+        Action action = moves.get(random.nextInt(moves.size()));
+        actions[0] = new ActionControlPair(action, 0);
         return actions;
     }
 }
-*/
+
